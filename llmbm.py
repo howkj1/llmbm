@@ -68,6 +68,16 @@ def _run(*cmd, **kw):
     except Exception:
         return ''
 
+def _find_hwmon_dir(name):
+    hwmon = Path('/sys/class/hwmon')
+    if not hwmon.exists():
+        return None
+    for p in hwmon.iterdir():
+        nf = p / 'name'
+        if nf.exists() and nf.read_text().strip() == name:
+            return p
+    return None
+
 def _slugify(text):
     s = text.lower()
     for noise in ('nvidia', 'geforce', 'amd', 'radeon rx', 'radeon', 'intel',
@@ -129,7 +139,7 @@ def _linux_hardware():
     except Exception:
         pass
 
-    # GPU — try nvidia-smi, then lspci
+    # GPU — try nvidia-smi, then lspci + AMD sysfs
     gpu = ''
     nvsmi = _run('nvidia-smi', '--query-gpu=name,memory.total',
                  '--format=csv,noheader,nounits')
@@ -147,6 +157,16 @@ def _linux_hardware():
             if re.search(r'vga|3d controller|display', line, re.I):
                 gpu = line.split(':', 2)[-1].strip()
                 break
+    # Append AMD VRAM from sysfs if not already present
+    if gpu and 'VRAM' not in gpu:
+        for vf in sorted(Path('/sys/class/drm').glob('card*/device/mem_info_vram_total')):
+            try:
+                vram_gb = round(int(vf.read_text().strip()) / 1024**3)
+                if vram_gb > 0:
+                    gpu += f' {vram_gb}GB VRAM'
+                break
+            except Exception:
+                pass
     gpu = gpu or 'Unknown GPU'
 
     short_gpu = re.sub(r'nvidia geforce |amd radeon |intel ', '', gpu, flags=re.I)
@@ -189,9 +209,14 @@ def check_sensors():
     """Return list of INFO strings about unavailable sensors (non-fatal)."""
     notes = []
     if platform.system() == 'Linux':
-        if not shutil.which('nvidia-smi'):
-            notes.append('nvidia-smi not found — GPU temperature tracking disabled.\n'
-                         '    Install NVIDIA drivers to enable it.')
+        has_nvidia = bool(shutil.which('nvidia-smi'))
+        has_amdgpu = bool(_find_hwmon_dir('amdgpu'))
+        if not has_nvidia and not has_amdgpu:
+            notes.append(
+                'No GPU sensor found — temperature/power tracking disabled.\n'
+                '    NVIDIA: install NVIDIA drivers (provides nvidia-smi).\n'
+                '    AMD: ensure the amdgpu kernel driver is loaded\n'
+                '         (check: ls /sys/class/hwmon/*/name | xargs grep amdgpu)')
     elif platform.system() == 'Darwin':
         try:
             subprocess.check_call(
@@ -424,22 +449,44 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 # ── Hardware readers ──────────────────────────────────────────────────────────
 
 def _find_hwmon(name):
-    hwmon = Path('/sys/class/hwmon')
-    if not hwmon.exists():
-        return None
-    for p in hwmon.iterdir():
-        nf = p / 'name'
-        if nf.exists() and nf.read_text().strip() == name:
-            return p / 'temp1_input'
-    return None
+    d = _find_hwmon_dir(name)
+    return (d / 'temp1_input') if d else None
 
 _K10TEMP  = _find_hwmon('k10temp')   if platform.system() == 'Linux' else None
 _CORETEMP = _find_hwmon('coretemp')  if platform.system() == 'Linux' else None
 _mac_power_ok = None
 
+def _read_amdgpu():
+    """Read AMD GPU stats from hwmon and drm sysfs. Returns (temp_c, util_pct, power_w)."""
+    hw = _find_hwmon_dir('amdgpu')
+    temp_c = util_pct = power_w = None
+    if hw:
+        try:
+            t = hw / 'temp1_input'
+            if t.exists():
+                temp_c = round(int(t.read_text().strip()) / 1000, 1)
+        except Exception:
+            pass
+        for pf in ('power1_average', 'power1_input'):
+            try:
+                pv = hw / pf
+                if pv.exists():
+                    power_w = round(int(pv.read_text().strip()) / 1_000_000, 1)
+                    break
+            except Exception:
+                pass
+    for card in sorted(Path('/sys/class/drm').glob('card*/device/gpu_busy_percent')):
+        try:
+            util_pct = int(card.read_text().strip())
+            break
+        except Exception:
+            pass
+    return temp_c, util_pct, power_w
+
 def read_gpu():
     if platform.system() != 'Linux':
         return None, None, None
+    # NVIDIA
     try:
         out = subprocess.check_output(
             ['nvidia-smi', '--query-gpu=temperature.gpu,utilization.gpu,power.draw',
@@ -448,7 +495,12 @@ def read_gpu():
         parts = [x.strip() for x in out.split(',')]
         return int(parts[0]), int(parts[1]), float(parts[2])
     except Exception:
-        return None, None, None
+        pass
+    # AMD
+    temp_c, util_pct, power_w = _read_amdgpu()
+    if temp_c is not None or util_pct is not None:
+        return temp_c, util_pct, power_w
+    return None, None, None
 
 def read_cpu():
     if platform.system() == 'Darwin':

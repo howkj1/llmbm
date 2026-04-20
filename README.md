@@ -22,7 +22,8 @@ Each contributor submits one `.md` file. All files in the same folder are auto-d
     | sudo tee /etc/sudoers.d/powermetrics-bench
   sudo chmod 440 /etc/sudoers.d/powermetrics-bench
   ```
-- **Linux** — GPU tracking requires NVIDIA drivers (`nvidia-smi`)
+- **Linux (NVIDIA)** — GPU tracking requires NVIDIA drivers (`nvidia-smi`)
+- **Linux (AMD)** — GPU tracking uses the standard `amdgpu` kernel driver (no ROCm needed); available on any modern Linux distro with an AMD GPU. Reads temperature and power from `/sys/class/hwmon/` and utilization from `/sys/class/drm/`
 
 ---
 
@@ -38,16 +39,53 @@ The TUI will:
 - Let you select which models to benchmark and configure settings
 - Write `model-benchmark-results-{machine-id}.md` when done
 
-For scripted/CI use:
+### Manual / scripted runs (skip TUI)
+
+Benchmark a single model with default pp/tg settings and write the summary file:
 
 ```bash
 python3 llmbm.py --no-interactive \
-  --machine-id rtx4090-linux \
-  --machine-label "RTX 4090, Ryzen 9 7950X" \
+  --machine-id rtx2080-ryzen7 \
+  --machine-label "RTX 2080 Super, Ryzen 7 5800X, 64GB" \
+  --machine-desc "RTX 2080 Super 8GB VRAM, AMD Ryzen 7 5800X, 64GB DDR4, Ubuntu 22.04" \
   --base-url http://localhost:11434/v1 \
-  modelname:latest \
+  qwen3:14b \
   --write-summary
 ```
+
+Benchmark multiple prompt/generation lengths with 5 runs each and cooldown:
+
+```bash
+python3 llmbm.py --no-interactive \
+  --machine-id rtx2080-ryzen7 \
+  --machine-label "RTX 2080 Super, Ryzen 7 5800X, 64GB" \
+  --base-url http://localhost:11434/v1 \
+  --pp 128,512,2048 \
+  --tg 64,256 \
+  --runs 5 \
+  --gpu-cool 65 \
+  --out-dir ~/bench-results \
+  qwen3:14b \
+  --write-summary
+```
+
+Benchmark against a remote Ollama instance on the local network:
+
+```bash
+python3 llmbm.py --no-interactive \
+  --machine-id m4-mac-mini \
+  --machine-label "Apple M4 Mac Mini, 16GB" \
+  --machine-desc "Apple M4 Mac Mini, 16GB unified memory, macOS 15" \
+  --base-url http://192.168.1.50:11434/v1 \
+  --pp 512,2048 \
+  --tg 64,256 \
+  --runs 3 \
+  --out-dir ~/bench-results \
+  gemma4:e4b \
+  --write-summary
+```
+
+The `--out-dir` flag controls where raw per-combo result files land. The summary file (`model-benchmark-results-{machine-id}.md`) always goes in the current directory unless `--summary-dir` is set.
 
 ---
 
