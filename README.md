@@ -22,8 +22,9 @@ Each contributor submits one `.md` file. All files in the same folder are auto-d
     | sudo tee /etc/sudoers.d/powermetrics-bench
   sudo chmod 440 /etc/sudoers.d/powermetrics-bench
   ```
-- **Linux (NVIDIA)** — GPU tracking requires NVIDIA drivers (`nvidia-smi`)
-- **Linux (AMD)** — GPU tracking uses the standard `amdgpu` kernel driver (no ROCm needed); available on any modern Linux distro with an AMD GPU. Reads temperature and power from `/sys/class/hwmon/` and utilization from `/sys/class/drm/`
+- **Linux (NVIDIA)** — GPU tracking requires NVIDIA drivers (`nvidia-smi`). Multi-GPU systems fully supported — use `--gpu-index` or the TUI selector
+- **Linux (AMD)** — GPU tracking uses the standard `amdgpu` kernel driver (no ROCm needed); reads temperature, power, and utilization from sysfs. Multi-GPU supported
+- **Linux (Intel)** — GPU tracking uses the `xe` (Arc discrete) or `i915` (integrated) kernel driver; both ship with the Linux kernel. Multi-GPU supported. Utilization tracking is optional: `sudo apt install intel-gpu-tools`
 
 ---
 
@@ -34,10 +35,17 @@ python3 llmbm.py
 ```
 
 The TUI will:
-- Detect your CPU, GPU, and RAM
+- Detect your CPU, GPU(s), and RAM
+- Show a GPU selector if multiple GPUs are detected
 - Query your Ollama endpoint for installed models
 - Let you select which models to benchmark and configure settings
 - Write `model-benchmark-results-{machine-id}.md` when done
+
+To list detected GPUs without running the full TUI:
+
+```bash
+python3 llmbm.py --list-gpus
+```
 
 ### Manual / scripted runs (skip TUI)
 
@@ -53,7 +61,7 @@ python3 llmbm.py --no-interactive \
   --write-summary
 ```
 
-Benchmark multiple prompt/generation lengths with 5 runs each and cooldown:
+Benchmark multiple prompt/generation lengths with 5 runs each, cooldown, and explicit GPU selection:
 
 ```bash
 python3 llmbm.py --no-interactive \
@@ -63,6 +71,7 @@ python3 llmbm.py --no-interactive \
   --pp 128,512,2048 \
   --tg 64,256 \
   --runs 5 \
+  --gpu-index 0 \
   --gpu-cool 65 \
   --out-dir ~/bench-results \
   qwen3:14b \

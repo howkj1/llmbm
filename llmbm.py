@@ -48,6 +48,10 @@ parser.add_argument('--write-summary',  action='store_true',
                     help='Upsert results into model-benchmark-results-{id}.md')
 parser.add_argument('--summary-dir',    default=None,
                     help='Directory for summary .md  (default: current directory)')
+parser.add_argument('--gpu-index',      type=int, default=None,
+                    help='Index of GPU to monitor (default: 0 / first detected; use --list-gpus to see options)')
+parser.add_argument('--list-gpus',      action='store_true',
+                    help='Print detected GPUs and exit')
 parser.add_argument('--no-cache',       action='store_true')
 parser.add_argument('--no-interactive', action='store_true',
                     help='Skip all prompts; require all flags explicitly')
@@ -77,6 +81,95 @@ def _find_hwmon_dir(name):
         if nf.exists() and nf.read_text().strip() == name:
             return p
     return None
+
+_VENDOR_ID = {'0x1002': 'amd', '0x8086': 'intel'}
+_DRIVER_NAMES = {'amd': ['amdgpu'], 'intel': ['xe', 'i915']}
+
+def _enumerate_drm_gpus():
+    """Enumerate AMD/Intel GPUs via DRM sysfs.
+
+    Links each card{N} to its hwmon dir (via matching PCI device symlink),
+    busy_percent path, VRAM size, and GPU name from lspci.
+    Returns list of dicts keyed by sequential index.
+    """
+    drm = Path('/sys/class/drm')
+    if not drm.exists():
+        return []
+
+    # Build hwmon→device map once for fast lookup
+    hwmon_map = {}  # resolved_device_path → hwmon_dir
+    hwmon_base = Path('/sys/class/hwmon')
+    if hwmon_base.exists():
+        for hw in hwmon_base.iterdir():
+            nf = hw / 'name'
+            if not nf.exists():
+                continue
+            driver = nf.read_text().strip()
+            if not any(driver in names for names in _DRIVER_NAMES.values()):
+                continue
+            dev_link = hw / 'device'
+            try:
+                hwmon_map[dev_link.resolve()] = hw
+            except Exception:
+                pass
+
+    gpus = []
+    card_idx = 0
+    for card in sorted(drm.glob('card[0-9]*'), key=lambda p: int(p.name[4:])):
+        device_dir = card / 'device'
+        if not device_dir.exists():
+            continue
+        vendor_f = device_dir / 'vendor'
+        try:
+            vendor = _VENDOR_ID.get(vendor_f.read_text().strip().lower())
+        except Exception:
+            vendor = None
+        if not vendor:
+            continue
+
+        # Resolve PCI device for hwmon matching and lspci name
+        try:
+            device_real = device_dir.resolve()
+        except Exception:
+            continue
+
+        hwmon_dir = hwmon_map.get(device_real)
+
+        busy_path = device_dir / 'gpu_busy_percent'
+        if not busy_path.exists():
+            busy_path = None
+
+        vram_gb = 0
+        try:
+            vf = device_dir / 'mem_info_vram_total'
+            if vf.exists():
+                vram_gb = round(int(vf.read_text().strip()) / 1024**3)
+        except Exception:
+            pass
+
+        # GPU name via lspci using PCI address (last component of resolved path)
+        name = ''
+        try:
+            pci_addr = device_real.name  # e.g. 0000:03:00.0
+            lspci_line = _run('lspci', '-s', pci_addr)
+            if lspci_line:
+                name = lspci_line.split(':', 2)[-1].strip()
+        except Exception:
+            pass
+        name = name or f'{vendor.upper()} GPU'
+
+        vram_str = f' {vram_gb}GB VRAM' if vram_gb else ''
+        gpus.append({
+            'index':     card_idx,
+            'vendor':    vendor,
+            'name':      name,
+            'vram':      vram_gb,
+            'hwmon_dir': hwmon_dir,
+            'busy_path': busy_path,
+            'display':   f'[{card_idx}] {name}{vram_str}',
+        })
+        card_idx += 1
+    return gpus
 
 def _slugify(text):
     s = text.lower()
@@ -211,12 +304,17 @@ def check_sensors():
     if platform.system() == 'Linux':
         has_nvidia = bool(shutil.which('nvidia-smi'))
         has_amdgpu = bool(_find_hwmon_dir('amdgpu'))
-        if not has_nvidia and not has_amdgpu:
+        has_intel  = bool(_find_hwmon_dir('xe') or _find_hwmon_dir('i915'))
+        if not has_nvidia and not has_amdgpu and not has_intel:
             notes.append(
                 'No GPU sensor found — temperature/power tracking disabled.\n'
                 '    NVIDIA: install NVIDIA drivers (provides nvidia-smi).\n'
-                '    AMD: ensure the amdgpu kernel driver is loaded\n'
-                '         (check: ls /sys/class/hwmon/*/name | xargs grep amdgpu)')
+                '    AMD:    ensure the amdgpu kernel driver is loaded.\n'
+                '    Intel:  ensure the xe (Arc) or i915 kernel driver is loaded.')
+        elif has_intel and not shutil.which('intel_gpu_top'):
+            notes.append(
+                'intel_gpu_top not found — Intel GPU utilization tracking disabled.\n'
+                '    Install: sudo apt install intel-gpu-tools  (or distro equivalent)')
     elif platform.system() == 'Darwin':
         try:
             subprocess.check_call(
@@ -232,6 +330,44 @@ def check_sensors():
                 '        | sudo tee /etc/sudoers.d/powermetrics-bench\n'
                 '      sudo chmod 440 /etc/sudoers.d/powermetrics-bench')
     return notes
+
+# ── GPU discovery ────────────────────────────────────────────────────────────
+
+def discover_gpus():
+    """Return list of (index, vendor, display_name, meta) for all detectable GPUs.
+
+    meta is None for NVIDIA; a dict with hwmon_dir/busy_path/vram for AMD/Intel.
+    NVIDIA GPUs are always listed first, then AMD/Intel in card order.
+    """
+    if platform.system() != 'Linux':
+        return []
+    gpus = []
+    # NVIDIA — enumerate all via nvidia-smi
+    out = _run('nvidia-smi', '--query-gpu=index,name,memory.total',
+               '--format=csv,noheader,nounits')
+    if out:
+        for line in out.splitlines():
+            parts = [p.strip() for p in line.split(',')]
+            if len(parts) < 2:
+                continue
+            try:
+                idx = int(parts[0])
+            except ValueError:
+                continue
+            name = parts[1]
+            try:
+                vram = f'{int(parts[2]) // 1024}GB VRAM'
+            except Exception:
+                vram = ''
+            display = f'[{idx}] {name}{f" {vram}" if vram else ""}'
+            gpus.append((idx, 'nvidia', display, None))
+    # AMD/Intel — enumerate via DRM sysfs
+    nvidia_count = len(gpus)
+    for g in _enumerate_drm_gpus():
+        idx = nvidia_count + g['index']
+        gpus.append((idx, g['vendor'], f'[{idx}] {g["name"]}' +
+                     (f' {g["vram"]}GB VRAM' if g['vram'] else ''), g))
+    return gpus
 
 # ── TUI helpers ───────────────────────────────────────────────────────────────
 
@@ -267,6 +403,25 @@ def _confirm(label, default=True):
     if not raw:
         return default
     return raw.startswith('y')
+
+def _select_gpu(gpus):
+    """Return (index, vendor, meta) for the chosen GPU. Auto-selects if only one."""
+    if not gpus:
+        return 0, 'unknown', None
+    if len(gpus) == 1:
+        print(f'    GPU: {gpus[0][2]}')
+        return gpus[0][0], gpus[0][1], gpus[0][3]
+    _section('Available GPUs')
+    for i, (idx, vendor, name, _) in enumerate(gpus, 1):
+        print(f'    [{i}] {name}')
+    while True:
+        raw = input(f'    Select GPU [1]: ').strip()
+        if not raw:
+            return gpus[0][0], gpus[0][1], gpus[0][3]
+        if raw.isdigit() and 1 <= int(raw) <= len(gpus):
+            g = gpus[int(raw) - 1]
+            return g[0], g[1], g[3]
+        print('    Invalid selection')
 
 def _select_models(available):
     _section('Available models')
@@ -315,6 +470,15 @@ def run_tui(hw_label, hw_desc, hw_id):
     print(f'    GPU       : {gpu}')
     print(f'    RAM       : {ram}')
     print(f'    OS        : {platform.system()} {platform.release()} {platform.machine()}')
+
+    _section('GPU selection')
+    gpus = discover_gpus()
+    if args.gpu_index is not None:
+        match = next(((v, m) for i, v, _, m in gpus if i == args.gpu_index), ('unknown', None))
+        gpu_index, gpu_vendor, gpu_meta = args.gpu_index, match[0], match[1]
+        print(f'    Using GPU index {gpu_index} (from --gpu-index)')
+    else:
+        gpu_index, gpu_vendor, gpu_meta = _select_gpu(gpus)
 
     _section('Machine identity  (used in filenames and HTML)')
     machine_id    = _ask('Machine ID', args.machine_id or hw_id)
@@ -371,6 +535,7 @@ def run_tui(hw_label, hw_desc, hw_id):
         runs=runs, gpu_cool=gpu_cool, cpu_cool=cpu_cool,
         out_dir=Path(out_dir), write_summary=write_summ,
         summary_dir=Path(summary_dir),
+        gpu_index=gpu_index, gpu_vendor=gpu_vendor, gpu_meta=gpu_meta,
     )
 
 def settings_from_args():
@@ -391,6 +556,9 @@ def settings_from_args():
         print(f'WARNING: model "{args.model}" not found at endpoint.')
         print(f'  Available: {", ".join(available)}')
 
+    idx = args.gpu_index or 0
+    gpus = discover_gpus()
+    match = next(((v, m) for i, v, _, m in gpus if i == idx), ('unknown', None))
     return dict(
         machine_id=args.machine_id,
         machine_label=args.machine_label or args.machine_id,
@@ -404,11 +572,22 @@ def settings_from_args():
         out_dir=Path(args.out_dir or Path.home() / 'bench-results'),
         write_summary=args.write_summary,
         summary_dir=Path(args.summary_dir or Path.cwd()),
+        gpu_index=idx, gpu_vendor=match[0], gpu_meta=match[1],
     )
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
 
 _, _, _, hw_label, hw_desc, hw_id = detect_hardware()
+
+if args.list_gpus:
+    gpus = discover_gpus()
+    if gpus:
+        print('Detected GPUs:')
+        for idx, vendor, name, _ in gpus:
+            print(f'  {name}  ({vendor})')
+    else:
+        print('No GPUs detected.')
+    sys.exit(0)
 
 bench_prefix = find_llama_benchy()
 if not bench_prefix:
@@ -443,6 +622,11 @@ OUT_DIR       = cfg['out_dir']
 WRITE_SUMMARY = cfg['write_summary']
 SUMMARY_DIR   = cfg['summary_dir']
 LARGE         = args.no_cache
+GPU_INDEX     = cfg['gpu_index']
+GPU_VENDOR    = cfg['gpu_vendor']
+_gpu_meta     = cfg.get('gpu_meta') or {}
+GPU_HWMON_DIR = _gpu_meta.get('hwmon_dir')  # Path or None
+GPU_BUSY_PATH = _gpu_meta.get('busy_path')  # Path or None
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -456,10 +640,15 @@ _K10TEMP  = _find_hwmon('k10temp')   if platform.system() == 'Linux' else None
 _CORETEMP = _find_hwmon('coretemp')  if platform.system() == 'Linux' else None
 _mac_power_ok = None
 
-def _read_amdgpu():
-    """Read AMD GPU stats from hwmon and drm sysfs. Returns (temp_c, util_pct, power_w)."""
-    hw = _find_hwmon_dir('amdgpu')
-    temp_c = util_pct = power_w = None
+def _read_hwmon_gpu(hwmon_dir=None, driver_names=None):
+    """Read temp and power from a hwmon dir. Falls back to driver name search."""
+    hw = hwmon_dir
+    if hw is None and driver_names:
+        for name in driver_names:
+            hw = _find_hwmon_dir(name)
+            if hw:
+                break
+    temp_c = power_w = None
     if hw:
         try:
             t = hw / 'temp1_input'
@@ -475,10 +664,41 @@ def _read_amdgpu():
                     break
             except Exception:
                 pass
-    for card in sorted(Path('/sys/class/drm').glob('card*/device/gpu_busy_percent')):
+    return temp_c, power_w
+
+def _read_amdgpu(hwmon_dir=None, busy_path=None):
+    """AMD GPU: hwmon temp/power + drm busy_percent for utilization."""
+    temp_c, power_w = _read_hwmon_gpu(hwmon_dir, ['amdgpu'])
+    util_pct = None
+    if busy_path:
         try:
-            util_pct = int(card.read_text().strip())
-            break
+            util_pct = int(Path(busy_path).read_text().strip())
+        except Exception:
+            pass
+    else:
+        for card in sorted(Path('/sys/class/drm').glob('card*/device/gpu_busy_percent')):
+            try:
+                util_pct = int(card.read_text().strip())
+                break
+            except Exception:
+                pass
+    return temp_c, util_pct, power_w
+
+def _read_intelgpu(hwmon_dir=None):
+    """Intel GPU: xe (Arc) or i915 (integrated) hwmon temp/power.
+    Utilization via intel_gpu_top if installed."""
+    temp_c, power_w = _read_hwmon_gpu(hwmon_dir, ['xe', 'i915'])
+    util_pct = None
+    if shutil.which('intel_gpu_top'):
+        try:
+            out = subprocess.check_output(
+                ['intel_gpu_top', '-J', '-s', '250'],
+                text=True, stderr=subprocess.DEVNULL, timeout=2)
+            for line in out.splitlines():
+                m = re.search(r'"Render/3D".*?"busy":\s*([\d.]+)', line)
+                if m:
+                    util_pct = round(float(m.group(1)))
+                    break
         except Exception:
             pass
     return temp_c, util_pct, power_w
@@ -486,18 +706,39 @@ def _read_amdgpu():
 def read_gpu():
     if platform.system() != 'Linux':
         return None, None, None
-    # NVIDIA
+    if GPU_VENDOR == 'nvidia':
+        try:
+            out = subprocess.check_output(
+                ['nvidia-smi', '-i', str(GPU_INDEX),
+                 '--query-gpu=temperature.gpu,utilization.gpu,power.draw',
+                 '--format=csv,noheader,nounits'],
+                text=True, stderr=subprocess.DEVNULL).strip()
+            parts = [x.strip() for x in out.split(',')]
+            return int(parts[0]), int(parts[1]), float(parts[2])
+        except Exception:
+            pass
+        return None, None, None
+    if GPU_VENDOR == 'amd':
+        temp_c, util_pct, power_w = _read_amdgpu(GPU_HWMON_DIR, GPU_BUSY_PATH)
+        return temp_c, util_pct, power_w
+    if GPU_VENDOR == 'intel':
+        temp_c, util_pct, power_w = _read_intelgpu(GPU_HWMON_DIR)
+        return temp_c, util_pct, power_w
+    # Unknown vendor — try all
     try:
         out = subprocess.check_output(
-            ['nvidia-smi', '--query-gpu=temperature.gpu,utilization.gpu,power.draw',
+            ['nvidia-smi', '-i', str(GPU_INDEX),
+             '--query-gpu=temperature.gpu,utilization.gpu,power.draw',
              '--format=csv,noheader,nounits'],
             text=True, stderr=subprocess.DEVNULL).strip()
         parts = [x.strip() for x in out.split(',')]
         return int(parts[0]), int(parts[1]), float(parts[2])
     except Exception:
         pass
-    # AMD
     temp_c, util_pct, power_w = _read_amdgpu()
+    if temp_c is not None or util_pct is not None:
+        return temp_c, util_pct, power_w
+    temp_c, util_pct, power_w = _read_intelgpu()
     if temp_c is not None or util_pct is not None:
         return temp_c, util_pct, power_w
     return None, None, None
