@@ -1,3 +1,5 @@
+# melt 🫠🧈 at your own risk
+
 # llmbm — LLM Benchmark Suite
 
 Benchmark local LLM models via [Ollama](https://ollama.com) and generate a shareable HTML report with per-machine leaderboards and cross-machine comparison.
