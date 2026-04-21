@@ -36,16 +36,53 @@ python3 llmbm.py
 
 The TUI will:
 - Detect your CPU, GPU(s), and RAM
-- Show a GPU selector if multiple GPUs are detected
+- Let you select one or more GPUs — multi-GPU runs benchmarks in parallel
+- Assign each GPU its own Ollama endpoint (separate instances per GPU, or the same if Ollama handles distribution)
+- Distribute selected models round-robin across GPUs automatically
 - Query your Ollama endpoint for installed models
-- Let you select which models to benchmark and configure settings
-- Write `model-benchmark-results-{machine-id}.md` when done
+- Write `model-benchmark-results-{machine-id}.md` when done (all GPUs write to the same file, serialized safely)
 
 To list detected GPUs without running the full TUI:
 
 ```bash
 python3 llmbm.py --list-gpus
 ```
+
+### Multi-GPU setup
+
+Each GPU worker runs in its own thread, so llama-benchy subprocesses launch simultaneously and each GPU is polled independently. Whether you get **true parallel execution** depends on how Ollama is configured:
+
+| Setup | Result |
+|---|---|
+| Single Ollama instance, multiple workers pointing at it | Serialized — Ollama queues requests, one model at a time |
+| Separate Ollama instance per GPU | Truly parallel — each GPU runs its model independently |
+
+For true parallel isolation, run a separate Ollama instance per GPU. Use `CUDA_VISIBLE_DEVICES` (NVIDIA) or `ROCR_VISIBLE_DEVICES` (AMD) to pin each instance to a specific GPU:
+
+```bash
+# Terminal 1 — GPU 0 on port 11434
+CUDA_VISIBLE_DEVICES=0 OLLAMA_HOST=0.0.0.0:11434 ollama serve
+
+# Terminal 2 — GPU 1 on port 11435
+CUDA_VISIBLE_DEVICES=1 OLLAMA_HOST=0.0.0.0:11435 ollama serve
+```
+
+Then run llmbm pointing each GPU at its own endpoint:
+
+```bash
+python3 llmbm.py --no-interactive \
+  --machine-id dual-rtx \
+  --machine-label "2× RTX 3090, Threadripper 3960X" \
+  --gpu-indices 0,1 \
+  --endpoints http://localhost:11434/v1,http://localhost:11435/v1 \
+  --pp 512,2048 --tg 64,256 --runs 3 \
+  --write-summary \
+  qwen3:14b llama3.1:8b gemma3:4b phi4:latest
+```
+
+Models are distributed round-robin: GPU 0 gets `qwen3:14b` + `gemma3:4b`, GPU 1 gets `llama3.1:8b` + `phi4:latest`, both running simultaneously.
+
+> Using `--gpu-indices` with a single `--base-url` still runs threads concurrently but Ollama will bottleneck — requests are queued rather than truly parallel. Useful for testing the tooling, but not representative of isolated GPU performance.
 
 ### Manual / scripted runs (skip TUI)
 

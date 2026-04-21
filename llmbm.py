@@ -49,7 +49,11 @@ parser.add_argument('--write-summary',  action='store_true',
 parser.add_argument('--summary-dir',    default=None,
                     help='Directory for summary .md  (default: current directory)')
 parser.add_argument('--gpu-index',      type=int, default=None,
-                    help='Index of GPU to monitor (default: 0 / first detected; use --list-gpus to see options)')
+                    help='Single GPU index (default: 0); use --gpu-indices for multi-GPU')
+parser.add_argument('--gpu-indices',    default=None,
+                    help='Comma-separated GPU indices for parallel runs, e.g. 0,1')
+parser.add_argument('--endpoints',      default=None,
+                    help='Comma-separated Ollama endpoints, one per GPU in --gpu-indices order')
 parser.add_argument('--list-gpus',      action='store_true',
                     help='Print detected GPUs and exit')
 parser.add_argument('--no-cache',       action='store_true')
@@ -404,6 +408,52 @@ def _confirm(label, default=True):
         return default
     return raw.startswith('y')
 
+def _select_gpus(gpus, default_url):
+    """Multi-GPU selection. Returns list of {gpu_index, gpu_vendor, gpu_meta, base_url}."""
+    if not gpus:
+        return [{'gpu_index': 0, 'gpu_vendor': 'unknown', 'gpu_meta': None, 'base_url': default_url}]
+
+    _section('GPU selection  (multi-GPU runs benchmarks in parallel)')
+    for i, (idx, vendor, name, _) in enumerate(gpus, 1):
+        print(f'    [{i}] {name}')
+    print()
+    raw = input('    Select GPUs (numbers comma-separated, or "all") [1]: ').strip()
+    if not raw or raw == '1':
+        chosen = [gpus[0]]
+    elif raw.lower() == 'all':
+        chosen = gpus
+    else:
+        chosen = []
+        for part in raw.split(','):
+            part = part.strip()
+            if part.isdigit() and 1 <= int(part) <= len(gpus):
+                chosen.append(gpus[int(part) - 1])
+            else:
+                print(f'    Skipping invalid selection: {part}')
+        if not chosen:
+            chosen = [gpus[0]]
+
+    workers = []
+    for i, (idx, vendor, name, meta) in enumerate(chosen):
+        short = re.sub(r'^\[\d+\]\s*', '', name)
+        default_ep = default_url
+        if i > 0:
+            # suggest incrementing port for additional GPUs
+            try:
+                base, port = default_url.rsplit(':', 1)
+                path = ''
+                if '/' in port:
+                    port, path = port.split('/', 1)
+                    path = '/' + path
+                default_ep = f'{base}:{int(port) + i}{path}'
+            except Exception:
+                pass
+        print(f'\n    GPU {idx} ({short})')
+        url = _ask('    Ollama endpoint', default_ep)
+        workers.append({'gpu_index': idx, 'gpu_vendor': vendor,
+                        'gpu_meta': meta, 'base_url': url})
+    return workers
+
 def _select_gpu(gpus):
     """Return (index, vendor, meta) for the chosen GPU. Auto-selects if only one."""
     if not gpus:
@@ -471,22 +521,14 @@ def run_tui(hw_label, hw_desc, hw_id):
     print(f'    RAM       : {ram}')
     print(f'    OS        : {platform.system()} {platform.release()} {platform.machine()}')
 
-    _section('GPU selection')
-    gpus = discover_gpus()
-    if args.gpu_index is not None:
-        match = next(((v, m) for i, v, _, m in gpus if i == args.gpu_index), ('unknown', None))
-        gpu_index, gpu_vendor, gpu_meta = args.gpu_index, match[0], match[1]
-        print(f'    Using GPU index {gpu_index} (from --gpu-index)')
-    else:
-        gpu_index, gpu_vendor, gpu_meta = _select_gpu(gpus)
-
     _section('Machine identity  (used in filenames and HTML)')
     machine_id    = _ask('Machine ID', args.machine_id or hw_id)
     machine_label = _ask('Label (shown in HTML tabs)', args.machine_label or hw_label)
     machine_desc  = _ask('Description (report header)', args.machine_desc or hw_desc)
 
-    _section('Ollama endpoint')
-    base_url = _ask('Base URL', args.base_url or 'http://localhost:11434/v1')
+    _section('Primary Ollama endpoint')
+    default_url = args.base_url or 'http://localhost:11434/v1'
+    base_url = _ask('Base URL', default_url)
 
     print('\n  Checking endpoint…', end=' ', flush=True)
     available = fetch_models(base_url)
@@ -496,6 +538,9 @@ def run_tui(hw_label, hw_desc, hw_id):
         print('  Is Ollama running?  Try: ollama serve')
         sys.exit(1)
     print(f'OK  ({len(available)} models)')
+
+    gpus = discover_gpus()
+    workers = _select_gpus(gpus, base_url)
 
     models = _select_models(available)
 
@@ -516,13 +561,27 @@ def run_tui(hw_label, hw_desc, hw_id):
                            default=True if args.write_summary else True)
     summary_dir = _ask('Summary directory', args.summary_dir or str(Path.cwd()))
 
+    # Distribute models round-robin across workers
+    for i, model in enumerate(models):
+        workers[i % len(workers)].setdefault('models', []).append(model)
+    for w in workers:
+        w.setdefault('models', [])
+        # short label for output prefixing
+        w['label'] = re.sub(r'^\[\d+\]\s*', '', next(
+            (name for idx, _, name, _ in gpus if idx == w['gpu_index']), f'GPU {w["gpu_index"]}'))
+
     combos = len(pp.split(',')) * len(tg.split(','))
     total  = combos * runs * len(models)
     print()
     _hr()
-    print(f'  Ready: {len(models)} model(s) × {combos} combos × {runs} runs = {total} total runs')
-    for m in models:
-        print(f'    • {m}')
+    if len(workers) > 1:
+        print(f'  Parallel mode: {len(workers)} GPUs')
+        for w in workers:
+            print(f'    {w["label"]} → {w["base_url"]}: {", ".join(w["models"]) or "(none)"}')
+    else:
+        print(f'  Ready: {len(models)} model(s) × {combos} combos × {runs} runs = {total} total runs')
+        for m in models:
+            print(f'    • {m}')
     _hr()
     if not _confirm('\n  Proceed?', default=True):
         print('  Aborted.')
@@ -530,12 +589,13 @@ def run_tui(hw_label, hw_desc, hw_id):
 
     return dict(
         machine_id=machine_id, machine_label=machine_label, machine_desc=machine_desc,
-        base_url=base_url, models=models,
+        base_url=base_url, models=models, workers=workers,
         pp=list(map(int, pp.split(','))), tg=list(map(int, tg.split(','))),
         runs=runs, gpu_cool=gpu_cool, cpu_cool=cpu_cool,
         out_dir=Path(out_dir), write_summary=write_summ,
         summary_dir=Path(summary_dir),
-        gpu_index=gpu_index, gpu_vendor=gpu_vendor, gpu_meta=gpu_meta,
+        gpu_index=workers[0]['gpu_index'], gpu_vendor=workers[0]['gpu_vendor'],
+        gpu_meta=workers[0]['gpu_meta'],
     )
 
 def settings_from_args():
@@ -556,15 +616,42 @@ def settings_from_args():
         print(f'WARNING: model "{args.model}" not found at endpoint.')
         print(f'  Available: {", ".join(available)}')
 
-    idx = args.gpu_index or 0
     gpus = discover_gpus()
-    match = next(((v, m) for i, v, _, m in gpus if i == idx), ('unknown', None))
+    gpu_lookup = {idx: (v, name, m) for idx, v, name, m in gpus}
+
+    # Build workers list
+    base_url = args.base_url or 'http://localhost:11434/v1'
+    if args.gpu_indices:
+        indices   = [int(x.strip()) for x in args.gpu_indices.split(',')]
+        endpoints = ([u.strip() for u in args.endpoints.split(',')]
+                     if args.endpoints else [base_url] * len(indices))
+        if len(endpoints) < len(indices):
+            endpoints += [endpoints[-1]] * (len(indices) - len(endpoints))
+        workers = []
+        for i, idx in enumerate(indices):
+            v, name, meta = gpu_lookup.get(idx, ('unknown', f'GPU {idx}', None))
+            label = re.sub(r'^\[\d+\]\s*', '', name)
+            workers.append({'gpu_index': idx, 'gpu_vendor': v, 'gpu_meta': meta,
+                            'base_url': endpoints[i], 'label': label, 'models': []})
+    else:
+        idx = args.gpu_index or 0
+        v, name, meta = gpu_lookup.get(idx, ('unknown', f'GPU {idx}', None))
+        label = re.sub(r'^\[\d+\]\s*', '', name)
+        workers = [{'gpu_index': idx, 'gpu_vendor': v, 'gpu_meta': meta,
+                    'base_url': base_url, 'label': label, 'models': []}]
+
+    # Distribute model(s) round-robin
+    models = [args.model] if args.model else []
+    for i, model in enumerate(models):
+        workers[i % len(workers)]['models'].append(model)
+
     return dict(
         machine_id=args.machine_id,
         machine_label=args.machine_label or args.machine_id,
         machine_desc=args.machine_desc or f'{platform.system()} {platform.machine()}',
-        base_url=args.base_url,
-        models=[args.model],
+        base_url=base_url,
+        models=models,
+        workers=workers,
         pp=list(map(int, (args.pp or '128,512,2048').split(','))),
         tg=list(map(int, (args.tg or '64,256').split(','))),
         runs=args.runs or 3,
@@ -572,7 +659,8 @@ def settings_from_args():
         out_dir=Path(args.out_dir or Path.home() / 'bench-results'),
         write_summary=args.write_summary,
         summary_dir=Path(args.summary_dir or Path.cwd()),
-        gpu_index=idx, gpu_vendor=match[0], gpu_meta=match[1],
+        gpu_index=workers[0]['gpu_index'], gpu_vendor=workers[0]['gpu_vendor'],
+        gpu_meta=workers[0]['gpu_meta'],
     )
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
@@ -743,6 +831,30 @@ def read_gpu():
         return temp_c, util_pct, power_w
     return None, None, None
 
+def _make_gpu_reader(vendor, idx, hwmon_dir, busy_path):
+    """Return a read_gpu function bound to a specific GPU."""
+    def _reader():
+        if platform.system() != 'Linux':
+            return None, None, None
+        if vendor == 'nvidia':
+            try:
+                out = subprocess.check_output(
+                    ['nvidia-smi', '-i', str(idx),
+                     '--query-gpu=temperature.gpu,utilization.gpu,power.draw',
+                     '--format=csv,noheader,nounits'],
+                    text=True, stderr=subprocess.DEVNULL).strip()
+                parts = [x.strip() for x in out.split(',')]
+                return int(parts[0]), int(parts[1]), float(parts[2])
+            except Exception:
+                pass
+            return None, None, None
+        if vendor == 'amd':
+            return _read_amdgpu(hwmon_dir, busy_path)
+        if vendor == 'intel':
+            return _read_intelgpu(hwmon_dir)
+        return None, None, None
+    return _reader
+
 def read_cpu():
     if platform.system() == 'Darwin':
         return _read_cpu_mac()
@@ -777,10 +889,11 @@ CPU_COL = 'CPU W' if platform.system() == 'Darwin' else 'CPU °C'
 # ── Temp poller ───────────────────────────────────────────────────────────────
 
 class TempPoller:
-    def __init__(self):
+    def __init__(self, read_gpu_fn=None):
         self.readings = []
         self._stop = threading.Event()
         self._t = self._t0 = None
+        self._read_gpu = read_gpu_fn or read_gpu
 
     def start(self):
         self._stop.clear(); self._t0 = time.time()
@@ -793,7 +906,7 @@ class TempPoller:
     def _run(self):
         while not self._stop.is_set():
             elapsed = round(time.time() - self._t0)
-            self.readings.append((elapsed, *read_gpu(), read_cpu()))
+            self.readings.append((elapsed, *self._read_gpu(), read_cpu()))
             self._stop.wait(POLL_INTERVAL)
 
 # ── Mermaid helpers ───────────────────────────────────────────────────────────
@@ -835,25 +948,28 @@ def mermaid_temps(pp, tg, readings):
 
 # ── Cooldown gate ─────────────────────────────────────────────────────────────
 
-def wait_for_cooldown():
+def wait_for_cooldown(read_gpu_fn=None, prefix=''):
     if GPU_COOL is None and CPU_COOL is None: return
+    _rg = read_gpu_fn or read_gpu
     t0 = time.time()
     while True:
-        gpu_c, _, _ = read_gpu(); cpu_c = read_cpu()
+        gpu_c, _, _ = _rg(); cpu_c = read_cpu()
         gpu_ok = GPU_COOL is None or gpu_c is None or gpu_c <= GPU_COOL
         cpu_ok = CPU_COOL is None or cpu_c is None or cpu_c <= CPU_COOL
         elapsed = int(time.time() - t0)
         if gpu_ok and cpu_ok:
             if elapsed > 0:
-                print(f'  Cooldown done after {elapsed}s (GPU {gpu_c}, {CPU_COL} {cpu_c})',
+                print(f'{prefix}Cooldown done after {elapsed}s (GPU {gpu_c}, {CPU_COL} {cpu_c})',
                       flush=True)
             return
         if elapsed >= COOL_TIMEOUT:
-            print(f'  WARNING: cooldown timeout. Proceeding.', flush=True); return
-        print(f'  Cooling… GPU {gpu_c} {CPU_COL} {cpu_c} [{elapsed}s]', flush=True)
+            print(f'{prefix}WARNING: cooldown timeout. Proceeding.', flush=True); return
+        print(f'{prefix}Cooling… GPU {gpu_c} {CPU_COL} {cpu_c} [{elapsed}s]', flush=True)
         time.sleep(COOL_POLL)
 
 # ── Summary file helpers ──────────────────────────────────────────────────────
+
+_summary_lock = threading.Lock()
 
 def _ff(s):
     m = re.match(r'\s*([\d,]+\.?\d*)', s.strip())
@@ -956,12 +1072,6 @@ def write_summary(model, all_results, run_date):
     pp_row = (f'| {model} | {_fmt(pp_tps)} | {_fmt(ttft, hi=1)} | {MACHINE_LABEL} | {date_str} |')
     th_row = (f'| {model} | {gpu_peak} | {cpu_peak} | {MACHINE_LABEL} | {date_str} | |')
 
-    text  = path.read_text(encoding='utf-8') if path.exists() else _skeleton(date_str)
-    lines = text.splitlines()
-    lines = _upsert_table(lines, 'Generation Throughput',        model, tg_row)
-    lines = _upsert_table(lines, 'Prompt Processing Throughput', model, pp_row)
-    lines = _upsert_table(lines, 'Thermal Profile',              model, th_row)
-
     section  = [f'# Benchmark Report: {model}', '']
     section += [f'**Date:** {run_date.strftime("%Y-%m-%d %H:%M")}  ',
                 f'**Machine:** {MACHINE_DESC}  ',
@@ -984,28 +1094,50 @@ def write_summary(model, all_results, run_date):
             section.append(f'| {rd[0]} | {rd[1]} | {rd[2]} | {rd[3]} | {rd[4]} |')
         section += ['', '</details>', '', '---', '']
 
-    lines = _upsert_section(lines, model, section)
-    path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    with _summary_lock:
+        text  = path.read_text(encoding='utf-8') if path.exists() else _skeleton(date_str)
+        lines = text.splitlines()
+        lines = _upsert_table(lines, 'Generation Throughput',        model, tg_row)
+        lines = _upsert_table(lines, 'Prompt Processing Throughput', model, pp_row)
+        lines = _upsert_table(lines, 'Thermal Profile',              model, th_row)
+        lines = _upsert_section(lines, model, section)
+        path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
     print(f'  Summary updated: {path}', flush=True)
 
-# ── Benchmark runner (single model) ──────────────────────────────────────────
+# ── Benchmark runner ─────────────────────────────────────────────────────────
 
-def run_model(model):
-    safe     = model.replace(':', '_').replace('/', '_')
-    combos   = [(pp, tg) for pp in PP for tg in TG]
-    results  = []
-    first    = True
+def run_gpu_worker(worker):
+    """Run all assigned models on a single GPU, sequentially."""
+    meta = worker.get('gpu_meta') or {}
+    read_gpu_fn = _make_gpu_reader(
+        worker['gpu_vendor'], worker['gpu_index'],
+        meta.get('hwmon_dir'), meta.get('busy_path'))
+    label = worker.get('label', f'GPU {worker["gpu_index"]}')
+    for model in worker['models']:
+        run_model(model,
+                  base_url=worker['base_url'],
+                  read_gpu_fn=read_gpu_fn,
+                  gpu_label=label)
+
+def run_model(model, base_url=None, read_gpu_fn=None, gpu_label=''):
+    _base_url  = base_url or BASE_URL
+    _read_gpu  = read_gpu_fn or read_gpu
+    pfx        = f'[{gpu_label}] ' if gpu_label else '  '
+    safe       = model.replace(':', '_').replace('/', '_')
+    combos     = [(pp, tg) for pp in PP for tg in TG]
+    results    = []
+    first      = True
 
     print(f'\n{"═"*56}', flush=True)
-    print(f'  Model: {model}  |  {len(combos)} combos × {RUNS} runs', flush=True)
+    print(f'{pfx}Model: {model}  |  {len(combos)} combos × {RUNS} runs', flush=True)
     print(f'{"═"*56}', flush=True)
-    wait_for_cooldown()
+    wait_for_cooldown(_read_gpu, pfx)
 
     for pp, tg in combos:
-        print(f'\n  pp={pp} tg={tg}', flush=True)
+        print(f'\n{pfx}pp={pp} tg={tg}', flush=True)
         result_file = OUT_DIR / f'{safe}_{MACHINE_ID}_pp{pp}_tg{tg}.md'
         cmd = bench_prefix + [
-            '--base-url', BASE_URL, '--model', model,
+            '--base-url', _base_url, '--model', model,
             '--pp', str(pp), '--tg', str(tg), '--runs', str(RUNS),
             '--latency-mode', 'generation', '--format', 'md',
             '--save-result', str(result_file),
@@ -1013,7 +1145,7 @@ def run_model(model):
         if not first: cmd += ['--no-warmup', '--skip-coherence']
         if LARGE:     cmd += ['--no-cache']
 
-        poller = TempPoller()
+        poller = TempPoller(read_gpu_fn=_read_gpu)
         poller.start()
         t0   = time.time()
         proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -1023,13 +1155,13 @@ def run_model(model):
         bench_md  = result_file.read_text() if result_file.exists() else proc.stdout
         gpu_peak  = max((r[1] for r in poller.readings if r[1]), default=0)
         cpu_peak  = max((r[4] for r in poller.readings if r[4]), default=0)
-        print(f'  Done {dur}s | GPU {gpu_peak} | {CPU_COL} {cpu_peak}', flush=True)
+        print(f'{pfx}Done {dur}s | GPU {gpu_peak} | {CPU_COL} {cpu_peak}', flush=True)
 
         results.append({'pp': pp, 'tg': tg, 'bench_md': bench_md.strip(),
                         'temps': poller.readings, 'duration': dur,
                         'gpu_peak': gpu_peak, 'cpu_peak': cpu_peak})
         first = False
-        wait_for_cooldown()
+        wait_for_cooldown(_read_gpu, pfx)
 
     # per-model detail report
     report = OUT_DIR / f'{safe}_{MACHINE_ID}_report.md'
@@ -1037,7 +1169,7 @@ def run_model(model):
         f.write(f'# Benchmark Report: {model}\n\n')
         f.write(f'**Date:** {time.strftime("%Y-%m-%d %H:%M")}  \n')
         f.write(f'**Machine:** {MACHINE_DESC}  \n')
-        f.write(f'**Endpoint:** {BASE_URL}  \n')
+        f.write(f'**Endpoint:** {_base_url}  \n')
         f.write(f'**Run platform:** {platform.system()} {platform.release()} {platform.machine()}  \n')
         f.write(f'**Runs per test:** {RUNS}  \n\n---\n\n')
         f.write(f'## Summary\n\n| pp | tg | Duration (s) | GPU peak °C | {CPU_COL} peak |\n')
@@ -1064,8 +1196,21 @@ def run_model(model):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-for model in MODELS:
-    run_model(model)
+WORKERS = cfg.get('workers', [{'gpu_index': GPU_INDEX, 'gpu_vendor': GPU_VENDOR,
+                                'gpu_meta': _gpu_meta, 'base_url': BASE_URL,
+                                'label': '', 'models': MODELS}])
+
+if len(WORKERS) > 1:
+    print(f'\nStarting parallel benchmark across {len(WORKERS)} GPUs…', flush=True)
+    threads = [threading.Thread(target=run_gpu_worker, args=(w,), daemon=True)
+               for w in WORKERS]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    print('\nAll GPU workers done.', flush=True)
+else:
+    run_gpu_worker(WORKERS[0])
 
 print(f'\n{"═"*56}')
 print(f'  All done.  Results in {OUT_DIR}')
