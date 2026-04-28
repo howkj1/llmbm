@@ -3,7 +3,7 @@ layout: default
 custom_css: benchmark
 ---
 
-# minion64 (M1 Max) — Benchmark Summary
+# Apple M1 Max 64GB — Benchmark Summary
 
 **Machine:** MacBook Pro M1 Max, 64GB unified memory, macOS 26.4.1  
 **Tool:** llama-benchy | **Date:** 2026-04-28  
@@ -17,49 +17,49 @@ custom_css: benchmark
 
 | Model | Size | tg=64 @ pp=512 | tg=256 @ pp=512 | tg=64 @ pp=2048 | tg=256 @ pp=2048 | Tested from | Date |
 |:------|-----:|---:|---:|---:|---:|:------|:------|
-| gemma4:e2b | ? | 61.5 | 66.0 | 51.4 | 49.8 | minion64 (M1 Max) | 2026-04-28 |
-| gemma4:26b | ? | 45.0 | 44.3 | 34.1 | 33.9 | minion64 (M1 Max) | 2026-04-28 |
-| qwen3:32b | ? | 10.9 | 10.5 | 9.7 | 9.6 | minion64 (M1 Max) | 2026-04-28 |
-| phi4:14b | ? | 22.3 | 24.2 | 22.4 | 23.1 | minion64 (M1 Max) | 2026-04-28 |
-| mistral-small3.1:24b | ? | 14.6 | 14.6 | 14.0 | 13.7 | minion64 (M1 Max) | 2026-04-28 |
-| qwen2.5-coder:32b | ? | 12.0 | 11.8 | 11.7 | 11.6 | minion64 (M1 Max) | 2026-04-28 |
-| deepseek-r1:32b | ? | 11.7 | 11.7 | 11.0 | 11.1 | minion64 (M1 Max) | 2026-04-28 |
-| command-r:35b | ? | 16.5 | 17.2 | 15.4 | 15.6 | minion64 (M1 Max) | 2026-04-28 |
-| llama3.3:70b | ? | — | — | — | — | minion64 (M1 Max) | 2026-04-28 |
-| deepseek-r1:70b | ? | — | — | — | — | minion64 (M1 Max) | 2026-04-28 |
-| qwen3:8b | ? | 40.6 | 40.5 | 36.0 | 35.7 | minion64 (M1 Max) | 2026-04-28 |
+| gemma4:e2b | ? | 61.5 | 66.0 | 51.4 | 49.8 | Apple M1 Max 64GB | 2026-04-28 |
+| gemma4:26b | ? | 45.0 | 44.3 | 34.1 | 33.9 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen3:32b | ? | 10.9 | 10.5 | 9.7 | 9.6 | Apple M1 Max 64GB | 2026-04-28 |
+| phi4:14b | ? | 22.3 | 24.2 | 22.4 | 23.1 | Apple M1 Max 64GB | 2026-04-28 |
+| mistral-small3.1:24b | ? | 14.6 | 14.6 | 14.0 | 13.7 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen2.5-coder:32b | ? | 12.0 | 11.8 | 11.7 | 11.6 | Apple M1 Max 64GB | 2026-04-28 |
+| deepseek-r1:32b | ? | 11.7 | 11.7 | 11.0 | 11.1 | Apple M1 Max 64GB | 2026-04-28 |
+| command-r:35b | ? | 16.5 | 17.2 | 15.4 | 15.6 | Apple M1 Max 64GB | 2026-04-28 |
+| llama3.3:70b | ? | — | — | — | — | Apple M1 Max 64GB | 2026-04-28 |
+| deepseek-r1:70b | ? | — | — | — | — | Apple M1 Max 64GB | 2026-04-28 |
+| qwen3:8b | ? | 40.6 | 40.5 | 36.0 | 35.7 | Apple M1 Max 64GB | 2026-04-28 |
 
 ### Prompt Processing Throughput (PP tok/s @ pp=512)
 
 | Model | PP tok/s | TTFT (ms) | Tested from | Date |
 |:------|---:|---:|:------|:------|
-| gemma4:e2b | ~1,415 | ~521 | minion64 (M1 Max) | 2026-04-28 |
-| gemma4:26b | ~767 | ~825 | minion64 (M1 Max) | 2026-04-28 |
-| qwen3:32b | 92 | ~5,284 | minion64 (M1 Max) | 2026-04-28 |
-| phi4:14b | ~230 | ~2,163 | minion64 (M1 Max) | 2026-04-28 |
-| mistral-small3.1:24b | 0 | 0 | minion64 (M1 Max) | 2026-04-28 |
-| qwen2.5-coder:32b | 94 | ~5,027 | minion64 (M1 Max) | 2026-04-28 |
-| deepseek-r1:32b | 91 | ~5,318 | minion64 (M1 Max) | 2026-04-28 |
-| command-r:35b | ~126 | ~4,090 | minion64 (M1 Max) | 2026-04-28 |
-| llama3.3:70b | 0 | 0 | minion64 (M1 Max) | 2026-04-28 |
-| deepseek-r1:70b | 0 | 0 | minion64 (M1 Max) | 2026-04-28 |
-| qwen3:8b | ~465 | ~1,102 | minion64 (M1 Max) | 2026-04-28 |
+| gemma4:e2b | ~1,415 | ~521 | Apple M1 Max 64GB | 2026-04-28 |
+| gemma4:26b | ~767 | ~825 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen3:32b | 92 | ~5,284 | Apple M1 Max 64GB | 2026-04-28 |
+| phi4:14b | ~230 | ~2,163 | Apple M1 Max 64GB | 2026-04-28 |
+| mistral-small3.1:24b | 0 | 0 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen2.5-coder:32b | 94 | ~5,027 | Apple M1 Max 64GB | 2026-04-28 |
+| deepseek-r1:32b | 91 | ~5,318 | Apple M1 Max 64GB | 2026-04-28 |
+| command-r:35b | ~126 | ~4,090 | Apple M1 Max 64GB | 2026-04-28 |
+| llama3.3:70b | 0 | 0 | Apple M1 Max 64GB | 2026-04-28 |
+| deepseek-r1:70b | 0 | 0 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen3:8b | ~465 | ~1,102 | Apple M1 Max 64GB | 2026-04-28 |
 
 ### Thermal Profile (peak across all tests)
 
 | Model | GPU peak °C | CPU W peak | Tested from | Date | Notes |
 |:------|---:|---:|:------|:------|:------|
-| gemma4:e2b | 0 | 6.91 | minion64 (M1 Max) | 2026-04-28 | |
-| gemma4:26b | 0 | 5.22 | minion64 (M1 Max) | 2026-04-28 | |
-| qwen3:32b | 0 | 4.74 | minion64 (M1 Max) | 2026-04-28 | |
-| phi4:14b | 0 | 10.46 | minion64 (M1 Max) | 2026-04-28 | |
-| mistral-small3.1:24b | 0 | 8.78 | minion64 (M1 Max) | 2026-04-28 | |
-| qwen2.5-coder:32b | 0 | 9.45 | minion64 (M1 Max) | 2026-04-28 | |
-| deepseek-r1:32b | 0 | 5.53 | minion64 (M1 Max) | 2026-04-28 | |
-| command-r:35b | 0 | 4.22 | minion64 (M1 Max) | 2026-04-28 | |
-| llama3.3:70b | 0 | 42.61 | minion64 (M1 Max) | 2026-04-28 | |
-| deepseek-r1:70b | 0 | 42.23 | minion64 (M1 Max) | 2026-04-28 | |
-| qwen3:8b | 0 | 7.7 | minion64 (M1 Max) | 2026-04-28 | |
+| gemma4:e2b | 0 | 6.91 | Apple M1 Max 64GB | 2026-04-28 | |
+| gemma4:26b | 0 | 5.22 | Apple M1 Max 64GB | 2026-04-28 | |
+| qwen3:32b | 0 | 4.74 | Apple M1 Max 64GB | 2026-04-28 | |
+| phi4:14b | 0 | 10.46 | Apple M1 Max 64GB | 2026-04-28 | |
+| mistral-small3.1:24b | 0 | 8.78 | Apple M1 Max 64GB | 2026-04-28 | |
+| qwen2.5-coder:32b | 0 | 9.45 | Apple M1 Max 64GB | 2026-04-28 | |
+| deepseek-r1:32b | 0 | 5.53 | Apple M1 Max 64GB | 2026-04-28 | |
+| command-r:35b | 0 | 4.22 | Apple M1 Max 64GB | 2026-04-28 | |
+| llama3.3:70b | 0 | 42.61 | Apple M1 Max 64GB | 2026-04-28 | |
+| deepseek-r1:70b | 0 | 42.23 | Apple M1 Max 64GB | 2026-04-28 | |
+| qwen3:8b | 0 | 7.7 | Apple M1 Max 64GB | 2026-04-28 | |
 
 ---
 
