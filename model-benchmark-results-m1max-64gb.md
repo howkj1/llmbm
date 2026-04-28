@@ -27,6 +27,7 @@ custom_css: benchmark
 | command-r:35b | ? | 16.5 | 17.2 | 15.4 | 15.6 | minion64 (M1 Max) | 2026-04-28 |
 | llama3.3:70b | ? | — | — | — | — | minion64 (M1 Max) | 2026-04-28 |
 | deepseek-r1:70b | ? | — | — | — | — | minion64 (M1 Max) | 2026-04-28 |
+| qwen3:8b | ? | 40.6 | 40.5 | 36.0 | 35.7 | minion64 (M1 Max) | 2026-04-28 |
 
 ### Prompt Processing Throughput (PP tok/s @ pp=512)
 
@@ -42,6 +43,7 @@ custom_css: benchmark
 | command-r:35b | ~126 | ~4,090 | minion64 (M1 Max) | 2026-04-28 |
 | llama3.3:70b | 0 | 0 | minion64 (M1 Max) | 2026-04-28 |
 | deepseek-r1:70b | 0 | 0 | minion64 (M1 Max) | 2026-04-28 |
+| qwen3:8b | ~465 | ~1,102 | minion64 (M1 Max) | 2026-04-28 |
 
 ### Thermal Profile (peak across all tests)
 
@@ -57,6 +59,7 @@ custom_css: benchmark
 | command-r:35b | 0 | 4.22 | minion64 (M1 Max) | 2026-04-28 | |
 | llama3.3:70b | 0 | 42.61 | minion64 (M1 Max) | 2026-04-28 | |
 | deepseek-r1:70b | 0 | 42.23 | minion64 (M1 Max) | 2026-04-28 | |
+| qwen3:8b | 0 | 7.7 | minion64 (M1 Max) | 2026-04-28 | |
 
 ---
 
@@ -2825,6 +2828,262 @@ xychart-beta
 | 3 | None | None | None | 3.32 |
 | 6 | None | None | None | 3.31 |
 | 9 | None | None | None | 36.24 |
+
+</details>
+
+---
+
+# Benchmark Report: qwen3:8b
+
+**Date:** 2026-04-28 14:32  
+**Machine:** MacBook Pro M1 Max, 64GB unified memory, macOS 26.4.1  
+**Endpoint:** http://100.100.179.46:11434/v1  
+**Run platform:** Darwin 25.3.0 arm64  
+**Runs per test:** 3  
+
+---
+
+## Summary
+
+| pp | tg | Duration (s) | GPU peak °C | CPU W peak |
+|---:|---:|---:|---:|---:|
+| 512 | 64 | 101 | 0 | 2.39 |
+| 512 | 256 | 96 | 0 | 4.69 |
+| 2048 | 64 | 65 | 0 | 3.49 |
+| 2048 | 256 | 58 | 0 | 7.7 |
+
+---
+
+## pp=512 tg=64
+
+| model    |   test |            t/s |     peak t/s |       ttfr (ms) |   est_ppt (ms) |   e2e_ttft (ms) |
+|:---------|-------:|---------------:|-------------:|----------------:|---------------:|----------------:|
+| qwen3:8b |  pp512 | 465.14 ± 21.76 |              | 1081.23 ± 26.20 | 946.79 ± 26.20 | 1081.23 ± 26.20 |
+| qwen3:8b |   tg64 |   40.60 ± 0.08 | 41.00 ± 0.00 |                 |                |                 |
+
+### Thermal Data
+
+```mermaid
+xychart-beta
+  title "Thermal — pp=512 tg=64"
+  x-axis "Time (s)" [0, 3, 5, 8, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65, 67, 70, 72, 75, 77, 80, 82, 85, 87, 90, 92, 95, 97]
+  y-axis "W" 0 --> 7.390000000000001
+  line "CPU W" [0.3, 0.3, 1.4, 0.26, 1.34, 0.44, 2.39, 0.31, 1.76, 0.76, 1.73, 0.4, 0.6, 1.61, 0.53, 1.36, 0.49, 0.3, 0.5, 1.08, 1.52, 1.44, 0.69, 1.39, 0.37, 0.58, 0.34, 0.36, 2.3, 0.72, 1.58, 0.61, 0.63, 0.41, 2.22, 0.38, 0.83, 0.26, 1.63, 0.11]
+```
+
+<details><summary>Raw readings</summary>
+
+| Time (s) | GPU °C | GPU util % | GPU W | CPU W |
+|---:|---:|---:|---:|---:|
+| 0 | None | None | None | 0.3 |
+| 3 | None | None | None | 0.3 |
+| 5 | None | None | None | 1.4 |
+| 8 | None | None | None | 0.26 |
+| 10 | None | None | None | 1.34 |
+| 12 | None | None | None | 0.44 |
+| 15 | None | None | None | 2.39 |
+| 17 | None | None | None | 0.31 |
+| 20 | None | None | None | 1.76 |
+| 22 | None | None | None | 0.76 |
+| 25 | None | None | None | 1.73 |
+| 27 | None | None | None | 0.4 |
+| 30 | None | None | None | 0.6 |
+| 32 | None | None | None | 1.61 |
+| 35 | None | None | None | 0.53 |
+| 37 | None | None | None | 1.36 |
+| 40 | None | None | None | 0.49 |
+| 42 | None | None | None | 0.3 |
+| 45 | None | None | None | 0.5 |
+| 47 | None | None | None | 1.08 |
+| 50 | None | None | None | 1.52 |
+| 52 | None | None | None | 1.44 |
+| 55 | None | None | None | 0.69 |
+| 57 | None | None | None | 1.39 |
+| 60 | None | None | None | 0.37 |
+| 62 | None | None | None | 0.58 |
+| 65 | None | None | None | 0.34 |
+| 67 | None | None | None | 0.36 |
+| 70 | None | None | None | 2.3 |
+| 72 | None | None | None | 0.72 |
+| 75 | None | None | None | 1.58 |
+| 77 | None | None | None | 0.61 |
+| 80 | None | None | None | 0.63 |
+| 82 | None | None | None | 0.41 |
+| 85 | None | None | None | 2.22 |
+| 87 | None | None | None | 0.38 |
+| 90 | None | None | None | 0.83 |
+| 92 | None | None | None | 0.26 |
+| 95 | None | None | None | 1.63 |
+| 97 | None | None | None | 0.11 |
+| 100 | None | None | None | 1.13 |
+
+</details>
+
+---
+
+## pp=512 tg=256
+
+| model    |   test |           t/s |     peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
+|:---------|-------:|--------------:|-------------:|----------------:|----------------:|----------------:|
+| qwen3:8b |  pp512 | 464.41 ± 9.91 |              | 1121.93 ± 75.68 | 1011.24 ± 75.68 | 1121.93 ± 75.68 |
+| qwen3:8b |  tg256 |  40.45 ± 0.11 | 41.00 ± 0.00 |                 |                 |                 |
+
+### Thermal Data
+
+```mermaid
+xychart-beta
+  title "Thermal — pp=512 tg=256"
+  x-axis "Time (s)" [0, 3, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65, 67, 70, 72, 75, 77, 80, 82, 85, 87, 90, 92, 95]
+  y-axis "W" 0 --> 9.690000000000001
+  line "CPU W" [0.64, 0.31, 0.58, 0.37, 2.92, 1.39, 4.69, 0.28, 1.26, 0.29, 0.82, 1.3, 0.47, 0.82, 0.44, 0.47, 0.31, 0.29, 0.34, 1.22, 0.9, 1.93, 1.42, 1.47, 1.44, 0.96, 0.61, 0.64, 1.71, 1.2, 0.26, 0.39, 0.38, 0.45, 0.47, 1.47, 0.29, 1.15, 0.18]
+```
+
+<details><summary>Raw readings</summary>
+
+| Time (s) | GPU °C | GPU util % | GPU W | CPU W |
+|---:|---:|---:|---:|---:|
+| 0 | None | None | None | 0.64 |
+| 3 | None | None | None | 0.31 |
+| 5 | None | None | None | 0.58 |
+| 7 | None | None | None | 0.37 |
+| 10 | None | None | None | 2.92 |
+| 12 | None | None | None | 1.39 |
+| 15 | None | None | None | 4.69 |
+| 17 | None | None | None | 0.28 |
+| 20 | None | None | None | 1.26 |
+| 22 | None | None | None | 0.29 |
+| 25 | None | None | None | 0.82 |
+| 27 | None | None | None | 1.3 |
+| 30 | None | None | None | 0.47 |
+| 32 | None | None | None | 0.82 |
+| 35 | None | None | None | 0.44 |
+| 37 | None | None | None | 0.47 |
+| 40 | None | None | None | 0.31 |
+| 42 | None | None | None | 0.29 |
+| 45 | None | None | None | 0.34 |
+| 47 | None | None | None | 1.22 |
+| 50 | None | None | None | 0.9 |
+| 52 | None | None | None | 1.93 |
+| 55 | None | None | None | 1.42 |
+| 57 | None | None | None | 1.47 |
+| 60 | None | None | None | 1.44 |
+| 62 | None | None | None | 0.96 |
+| 65 | None | None | None | 0.61 |
+| 67 | None | None | None | 0.64 |
+| 70 | None | None | None | 1.71 |
+| 72 | None | None | None | 1.2 |
+| 75 | None | None | None | 0.26 |
+| 77 | None | None | None | 0.39 |
+| 80 | None | None | None | 0.38 |
+| 82 | None | None | None | 0.45 |
+| 85 | None | None | None | 0.47 |
+| 87 | None | None | None | 1.47 |
+| 90 | None | None | None | 0.29 |
+| 92 | None | None | None | 1.15 |
+| 95 | None | None | None | 0.18 |
+
+</details>
+
+---
+
+## pp=2048 tg=64
+
+| model    |   test |           t/s |     peak t/s |        ttfr (ms) |     est_ppt (ms) |    e2e_ttft (ms) |
+|:---------|-------:|--------------:|-------------:|-----------------:|-----------------:|-----------------:|
+| qwen3:8b | pp2048 | 446.34 ± 5.78 |              | 4222.55 ± 185.92 | 4110.61 ± 185.92 | 4222.55 ± 185.92 |
+| qwen3:8b |   tg64 |  35.95 ± 0.50 | 36.67 ± 0.47 |                  |                  |                  |
+
+### Thermal Data
+
+```mermaid
+xychart-beta
+  title "Thermal — pp=2048 tg=64"
+  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65]
+  y-axis "W" 0 --> 8.49
+  line "CPU W" [1.5, 0.93, 3.14, 0.48, 1.18, 1.33, 0.72, 0.51, 0.34, 0.48, 0.49, 2.08, 0.24, 3.49, 0.34, 1.96, 1.67, 1.35, 0.4, 0.56, 0.22, 0.41, 1.06, 0.35, 0.13, 0.45, 0.23]
+```
+
+<details><summary>Raw readings</summary>
+
+| Time (s) | GPU °C | GPU util % | GPU W | CPU W |
+|---:|---:|---:|---:|---:|
+| 0 | None | None | None | 1.5 |
+| 2 | None | None | None | 0.93 |
+| 5 | None | None | None | 3.14 |
+| 7 | None | None | None | 0.48 |
+| 10 | None | None | None | 1.18 |
+| 12 | None | None | None | 1.33 |
+| 15 | None | None | None | 0.72 |
+| 17 | None | None | None | 0.51 |
+| 20 | None | None | None | 0.34 |
+| 22 | None | None | None | 0.48 |
+| 25 | None | None | None | 0.49 |
+| 27 | None | None | None | 2.08 |
+| 30 | None | None | None | 0.24 |
+| 32 | None | None | None | 3.49 |
+| 35 | None | None | None | 0.34 |
+| 37 | None | None | None | 1.96 |
+| 40 | None | None | None | 1.67 |
+| 42 | None | None | None | 1.35 |
+| 45 | None | None | None | 0.4 |
+| 47 | None | None | None | 0.56 |
+| 50 | None | None | None | 0.22 |
+| 52 | None | None | None | 0.41 |
+| 55 | None | None | None | 1.06 |
+| 57 | None | None | None | 0.35 |
+| 60 | None | None | None | 0.13 |
+| 62 | None | None | None | 0.45 |
+| 65 | None | None | None | 0.23 |
+
+</details>
+
+---
+
+## pp=2048 tg=256
+
+| model    |   test |           t/s |     peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
+|:---------|-------:|--------------:|-------------:|----------------:|----------------:|----------------:|
+| qwen3:8b | pp2048 | 449.06 ± 2.10 |              | 4104.59 ± 60.92 | 3990.79 ± 60.92 | 4104.59 ± 60.92 |
+| qwen3:8b |  tg256 |  35.69 ± 0.12 | 36.67 ± 0.47 |                 |                 |                 |
+
+### Thermal Data
+
+```mermaid
+xychart-beta
+  title "Thermal — pp=2048 tg=256"
+  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 33, 35, 38, 40, 43, 45, 48, 50, 53, 55, 58]
+  y-axis "W" 0 --> 12.7
+  line "CPU W" [1.54, 0.46, 0.69, 0.37, 0.89, 0.29, 0.56, 0.34, 7.7, 0.41, 1.44, 0.18, 0.29, 0.16, 0.57, 0.14, 0.07, 0.18, 0.34, 0.2, 0.22, 0.17, 0.3, 0.16]
+```
+
+<details><summary>Raw readings</summary>
+
+| Time (s) | GPU °C | GPU util % | GPU W | CPU W |
+|---:|---:|---:|---:|---:|
+| 0 | None | None | None | 1.54 |
+| 2 | None | None | None | 0.46 |
+| 5 | None | None | None | 0.69 |
+| 7 | None | None | None | 0.37 |
+| 10 | None | None | None | 0.89 |
+| 12 | None | None | None | 0.29 |
+| 15 | None | None | None | 0.56 |
+| 17 | None | None | None | 0.34 |
+| 20 | None | None | None | 7.7 |
+| 22 | None | None | None | 0.41 |
+| 25 | None | None | None | 1.44 |
+| 27 | None | None | None | 0.18 |
+| 30 | None | None | None | 0.29 |
+| 33 | None | None | None | 0.16 |
+| 35 | None | None | None | 0.57 |
+| 38 | None | None | None | 0.14 |
+| 40 | None | None | None | 0.07 |
+| 43 | None | None | None | 0.18 |
+| 45 | None | None | None | 0.34 |
+| 48 | None | None | None | 0.2 |
+| 50 | None | None | None | 0.22 |
+| 53 | None | None | None | 0.17 |
+| 55 | None | None | None | 0.3 |
+| 58 | None | None | None | 0.16 |
 
 </details>
 
