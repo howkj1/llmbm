@@ -3,7 +3,7 @@ layout: default
 custom_css: benchmark
 ---
 
-# Stealth Machine — Full Benchmark Summary
+# AMD Ryzen 3700x — Full Benchmark Summary
 
 **Machine:** stealth (AMD) — Ryzen 7 3700X, RTX 2080 SUPER 8GB VRAM, 32GB RAM  
 **Tool:** llama-benchy 0.3.5 | **Date:** 2026-04-10  
