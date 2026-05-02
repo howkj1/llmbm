@@ -17,17 +17,17 @@ custom_css: benchmark
 
 | Model | Size | tg=64 @ pp=512 | tg=256 @ pp=512 | tg=64 @ pp=2048 | tg=256 @ pp=2048 | Tested from | Date |
 |:------|-----:|---:|---:|---:|---:|:------|:------|
-| gemma4:e2b | ? | 61.5 | 66.0 | 51.4 | 49.8 | Apple M1 Max 64GB | 2026-04-28 |
-| gemma4:26b | ? | 45.0 | 44.3 | 34.1 | 33.9 | Apple M1 Max 64GB | 2026-04-28 |
-| qwen3:32b | ? | 10.9 | 10.5 | 9.7 | 9.6 | Apple M1 Max 64GB | 2026-04-28 |
-| phi4:14b | ? | 22.3 | 24.2 | 22.4 | 23.1 | Apple M1 Max 64GB | 2026-04-28 |
-| mistral-small3.1:24b | ? | 14.6 | 14.6 | 14.0 | 13.7 | Apple M1 Max 64GB | 2026-04-28 |
-| qwen2.5-coder:32b | ? | 12.0 | 11.8 | 11.7 | 11.6 | Apple M1 Max 64GB | 2026-04-28 |
-| deepseek-r1:32b | ? | 11.7 | 11.7 | 11.0 | 11.1 | Apple M1 Max 64GB | 2026-04-28 |
-| command-r:35b | ? | 16.5 | 17.2 | 15.4 | 15.6 | Apple M1 Max 64GB | 2026-04-28 |
-| llama3.3:70b | ? | — | — | — | — | Apple M1 Max 64GB | 2026-04-28 |
-| deepseek-r1:70b | ? | — | — | — | — | Apple M1 Max 64GB | 2026-04-28 |
-| qwen3:8b | ? | 40.6 | 40.5 | 36.0 | 35.7 | Apple M1 Max 64GB | 2026-04-28 |
+| gemma4:e2b | 6.7GB | 61.5 | 66.0 | 51.4 | 49.8 | Apple M1 Max 64GB | 2026-04-28 |
+| gemma4:26b | 16.8GB | 45.0 | 44.3 | 34.1 | 33.9 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen3:32b | 18.8GB | 10.9 | 10.5 | 9.7 | 9.6 | Apple M1 Max 64GB | 2026-04-28 |
+| phi4:14b | 8.4GB | 22.3 | 24.2 | 22.4 | 23.1 | Apple M1 Max 64GB | 2026-04-28 |
+| mistral-small3.1:24b | 14.4GB | 14.6 | 14.6 | 14.0 | 13.7 | Apple M1 Max 64GB | 2026-04-28 |
+| qwen2.5-coder:32b | 18.5GB | 12.0 | 11.8 | 11.7 | 11.6 | Apple M1 Max 64GB | 2026-04-28 |
+| deepseek-r1:32b | 18.5GB | 11.7 | 11.7 | 11.0 | 11.1 | Apple M1 Max 64GB | 2026-04-28 |
+| command-r:35b | 17.4GB | 16.5 | 17.2 | 15.4 | 15.6 | Apple M1 Max 64GB | 2026-04-28 |
+| llama3.3:70b | 39.6GB | 5.2 | 5.1 | 4.8 | 4.7 | Apple M1 Max 64GB | 2026-05-01 |
+| deepseek-r1:70b | 39.6GB | 5.1 | 4.8 | 4.3 | 4.4 | Apple M1 Max 64GB | 2026-05-01 |
+| qwen3:8b | 4.9GB | 40.8 | 40.4 | 35.9 | 35.6 | Apple M1 Max 64GB | 2026-04-28 |
 
 ### Prompt Processing Throughput (PP tok/s @ pp=512)
 
@@ -41,9 +41,9 @@ custom_css: benchmark
 | qwen2.5-coder:32b | 94 | ~5,027 | Apple M1 Max 64GB | 2026-04-28 |
 | deepseek-r1:32b | 91 | ~5,318 | Apple M1 Max 64GB | 2026-04-28 |
 | command-r:35b | ~126 | ~4,090 | Apple M1 Max 64GB | 2026-04-28 |
-| llama3.3:70b | 0 | 0 | Apple M1 Max 64GB | 2026-04-28 |
-| deepseek-r1:70b | 0 | 0 | Apple M1 Max 64GB | 2026-04-28 |
-| qwen3:8b | ~465 | ~1,102 | Apple M1 Max 64GB | 2026-04-28 |
+| llama3.3:70b | 42 | ~11,107 | Apple M1 Max 64GB | 2026-05-01 |
+| deepseek-r1:70b | 39 | ~12,092 | Apple M1 Max 64GB | 2026-05-01 |
+| qwen3:8b | ~484 | ~1,075 | Apple M1 Max 64GB | 2026-04-28 |
 
 ### Thermal Profile (peak across all tests)
 
@@ -57,9 +57,9 @@ custom_css: benchmark
 | qwen2.5-coder:32b | 0 | 9.45 | Apple M1 Max 64GB | 2026-04-28 | |
 | deepseek-r1:32b | 0 | 5.53 | Apple M1 Max 64GB | 2026-04-28 | |
 | command-r:35b | 0 | 4.22 | Apple M1 Max 64GB | 2026-04-28 | |
-| llama3.3:70b | 0 | 42.61 | Apple M1 Max 64GB | 2026-04-28 | |
-| deepseek-r1:70b | 0 | 42.23 | Apple M1 Max 64GB | 2026-04-28 | |
-| qwen3:8b | 0 | 7.7 | Apple M1 Max 64GB | 2026-04-28 | |
+| llama3.3:70b | 0 | 11.59 | Apple M1 Max 64GB | 2026-05-01 | |
+| deepseek-r1:70b | 0 | 9.79 | Apple M1 Max 64GB | 2026-05-01 | |
+| qwen3:8b | 0 | 6.06 | Apple M1 Max 64GB | 2026-04-28 | |
 
 ---
 
@@ -2350,7 +2350,7 @@ xychart-beta
 
 # Benchmark Report: llama3.3:70b
 
-**Date:** 2026-04-28 03:58  
+**Date:** 2026-05-01 00:11  
 **Machine:** MacBook Pro M1 Max, 64GB unified memory, macOS 26.4.1  
 **Endpoint:** http://localhost:11434/v1  
 **Run platform:** Darwin 25.4.0 arm64  
@@ -2362,48 +2362,63 @@ xychart-beta
 
 | pp | tg | Duration (s) | GPU peak °C | CPU W peak |
 |---:|---:|---:|---:|---:|
-| 128 | 64 | 16 | 0 | 32.41 |
-| 128 | 256 | 13 | 0 | 41.11 |
-| 512 | 64 | 11 | 0 | 33.48 |
-| 512 | 256 | 12 | 0 | 38.33 |
-| 2048 | 64 | 12 | 0 | 42.35 |
-| 2048 | 256 | 12 | 0 | 42.61 |
+| 128 | 64 | 76 | 0 | 9.74 |
+| 128 | 256 | 133 | 0 | 11.35 |
+| 512 | 64 | 76 | 0 | 9.99 |
+| 512 | 256 | 159 | 0 | 11.59 |
+| 2048 | 64 | 178 | 0 | 9.11 |
+| 2048 | 256 | 300 | 0 | 11.36 |
 
 ---
 
 ## pp=128 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:57:17
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |        ttfr (ms) |     est_ppt (ms) |    e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|-----------------:|-----------------:|-----------------:|
+| llama3.3:70b |  pp128 | 57.41 ± 0.74 |             | 2413.63 ± 236.75 | 1977.15 ± 236.75 | 2413.63 ± 236.75 |
+| llama3.3:70b |   tg64 |  5.29 ± 0.00 | 6.00 ± 0.00 |                  |                  |                  |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=128 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 8, 11, 14]
-  y-axis "W" 0 --> 37.41
-  line "CPU W" [4.38, 2.64, 2.64, 1.86, 0.05, 32.41]
+  x-axis "Time (s)" [0, 3, 6, 8, 11, 14, 17, 20, 23, 26, 28, 31, 34, 37, 40, 43, 45, 48, 51, 54, 57, 60, 62, 65, 68, 71, 74]
+  y-axis "W" 0 --> 14.74
+  line "CPU W" [4.67, 3.41, 8.77, 3.86, 9.16, 6.42, 3.92, 3.85, 3.73, 9.74, 0.57, 3.04, 0.03, 1.71, 2.54, 4.95, 0.29, 0.03, 0.2, 2.34, 6.58, 0.72, 0.12, 0.12, 0.79, 5.95, 0.47]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.38 |
-| 3 | None | None | None | 2.64 |
-| 6 | None | None | None | 2.64 |
-| 8 | None | None | None | 1.86 |
-| 11 | None | None | None | 0.05 |
-| 14 | None | None | None | 32.41 |
+| 0 | None | None | None | 4.67 |
+| 3 | None | None | None | 3.41 |
+| 6 | None | None | None | 8.77 |
+| 8 | None | None | None | 3.86 |
+| 11 | None | None | None | 9.16 |
+| 14 | None | None | None | 6.42 |
+| 17 | None | None | None | 3.92 |
+| 20 | None | None | None | 3.85 |
+| 23 | None | None | None | 3.73 |
+| 26 | None | None | None | 9.74 |
+| 28 | None | None | None | 0.57 |
+| 31 | None | None | None | 3.04 |
+| 34 | None | None | None | 0.03 |
+| 37 | None | None | None | 1.71 |
+| 40 | None | None | None | 2.54 |
+| 43 | None | None | None | 4.95 |
+| 45 | None | None | None | 0.29 |
+| 48 | None | None | None | 0.03 |
+| 51 | None | None | None | 0.2 |
+| 54 | None | None | None | 2.34 |
+| 57 | None | None | None | 6.58 |
+| 60 | None | None | None | 0.72 |
+| 62 | None | None | None | 0.12 |
+| 65 | None | None | None | 0.12 |
+| 68 | None | None | None | 0.79 |
+| 71 | None | None | None | 5.95 |
+| 74 | None | None | None | 0.47 |
 
 </details>
 
@@ -2411,36 +2426,72 @@ xychart-beta
 
 ## pp=128 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:57:33
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|----------------:|----------------:|----------------:|
+| llama3.3:70b |  pp128 | 51.68 ± 3.37 |             | 2630.87 ± 58.01 | 2195.84 ± 58.01 | 2630.87 ± 58.01 |
+| llama3.3:70b |  tg256 |  5.22 ± 0.01 | 6.00 ± 0.00 |                 |                 |                 |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=128 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 8, 11]
-  y-axis "W" 0 --> 46.11
-  line "CPU W" [4.44, 3.36, 1.83, 41.11, 33.04]
+  x-axis "Time (s)" [0, 3, 6, 8, 11, 14, 20, 23, 26, 28, 31, 34, 40, 43, 46, 48, 51, 54, 60, 63, 65, 68, 71, 77, 80, 82, 85, 88, 91, 97, 99, 102, 105, 108, 111, 117, 119, 122, 125, 128]
+  y-axis "W" 0 --> 13.46
+  line "CPU W" [8.25, 3.82, 0.23, 0.31, 1.43, 0.12, 4.25, 0.15, 0.16, 0.26, 3.79, 5.73, 1.74, 0.65, 1.77, 6.54, 2.96, 0.11, 6.93, 0.2, 0.17, 0.38, 0.18, 0.17, 0.14, 0.8, 0.17, 1.66, 3.78, 0.12, 0.12, 0.68, 8.46, 0.11, 3.83, 1.86, 5.99, 0.29, 1.42, 0.11]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.44 |
-| 3 | None | None | None | 3.36 |
-| 6 | None | None | None | 1.83 |
-| 8 | None | None | None | 41.11 |
-| 11 | None | None | None | 33.04 |
+| 0 | None | None | None | 8.25 |
+| 3 | None | None | None | 3.82 |
+| 6 | None | None | None | 0.23 |
+| 8 | None | None | None | 0.31 |
+| 11 | None | None | None | 1.43 |
+| 14 | None | None | None | 0.12 |
+| 17 | None | None | None | 3.56 |
+| 20 | None | None | None | 4.25 |
+| 23 | None | None | None | 0.15 |
+| 26 | None | None | None | 0.16 |
+| 28 | None | None | None | 0.26 |
+| 31 | None | None | None | 3.79 |
+| 34 | None | None | None | 5.73 |
+| 37 | None | None | None | 3.13 |
+| 40 | None | None | None | 1.74 |
+| 43 | None | None | None | 0.65 |
+| 46 | None | None | None | 1.77 |
+| 48 | None | None | None | 6.54 |
+| 51 | None | None | None | 2.96 |
+| 54 | None | None | None | 0.11 |
+| 57 | None | None | None | 11.35 |
+| 60 | None | None | None | 6.93 |
+| 63 | None | None | None | 0.2 |
+| 65 | None | None | None | 0.17 |
+| 68 | None | None | None | 0.38 |
+| 71 | None | None | None | 0.18 |
+| 74 | None | None | None | 8.41 |
+| 77 | None | None | None | 0.17 |
+| 80 | None | None | None | 0.14 |
+| 82 | None | None | None | 0.8 |
+| 85 | None | None | None | 0.17 |
+| 88 | None | None | None | 1.66 |
+| 91 | None | None | None | 3.78 |
+| 94 | None | None | None | 0.12 |
+| 97 | None | None | None | 0.12 |
+| 99 | None | None | None | 0.12 |
+| 102 | None | None | None | 0.68 |
+| 105 | None | None | None | 8.46 |
+| 108 | None | None | None | 0.11 |
+| 111 | None | None | None | 3.83 |
+| 114 | None | None | None | 0.23 |
+| 117 | None | None | None | 1.86 |
+| 119 | None | None | None | 5.99 |
+| 122 | None | None | None | 0.29 |
+| 125 | None | None | None | 1.42 |
+| 128 | None | None | None | 0.11 |
+| 131 | None | None | None | 0.71 |
 
 </details>
 
@@ -2448,35 +2499,52 @@ xychart-beta
 
 ## pp=512 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:57:45
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |         ttfr (ms) |      est_ppt (ms) |     e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|------------------:|------------------:|------------------:|
+| llama3.3:70b |  pp512 | 41.76 ± 0.70 |             | 11122.98 ± 755.38 | 10681.79 ± 755.38 | 11122.98 ± 755.38 |
+| llama3.3:70b |   tg64 |  5.17 ± 0.02 | 6.00 ± 0.00 |                   |                   |                   |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 38.48
-  line "CPU W" [4.06, 3.43, 3.22, 33.48]
+  x-axis "Time (s)" [0, 3, 6, 8, 11, 14, 17, 20, 23, 26, 28, 31, 34, 37, 40, 43, 46, 48, 51, 54, 57, 60, 63, 65, 68, 71, 74]
+  y-axis "W" 0 --> 14.99
+  line "CPU W" [4.65, 0.05, 0.03, 2.86, 2.94, 0.08, 1.75, 0.11, 0.47, 5.63, 0.07, 0.27, 9.99, 7.89, 6.49, 0.82, 0.13, 0.4, 2.95, 3.79, 0.06, 0.04, 0.13, 0.88, 4.8, 0.8, 0.58]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.06 |
-| 3 | None | None | None | 3.43 |
-| 6 | None | None | None | 3.22 |
-| 9 | None | None | None | 33.48 |
+| 0 | None | None | None | 4.65 |
+| 3 | None | None | None | 0.05 |
+| 6 | None | None | None | 0.03 |
+| 8 | None | None | None | 2.86 |
+| 11 | None | None | None | 2.94 |
+| 14 | None | None | None | 0.08 |
+| 17 | None | None | None | 1.75 |
+| 20 | None | None | None | 0.11 |
+| 23 | None | None | None | 0.47 |
+| 26 | None | None | None | 5.63 |
+| 28 | None | None | None | 0.07 |
+| 31 | None | None | None | 0.27 |
+| 34 | None | None | None | 9.99 |
+| 37 | None | None | None | 7.89 |
+| 40 | None | None | None | 6.49 |
+| 43 | None | None | None | 0.82 |
+| 46 | None | None | None | 0.13 |
+| 48 | None | None | None | 0.4 |
+| 51 | None | None | None | 2.95 |
+| 54 | None | None | None | 3.79 |
+| 57 | None | None | None | 0.06 |
+| 60 | None | None | None | 0.04 |
+| 63 | None | None | None | 0.13 |
+| 65 | None | None | None | 0.88 |
+| 68 | None | None | None | 4.8 |
+| 71 | None | None | None | 0.8 |
+| 74 | None | None | None | 0.58 |
 
 </details>
 
@@ -2484,36 +2552,82 @@ xychart-beta
 
 ## pp=512 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:57:56
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |         ttfr (ms) |      est_ppt (ms) |     e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|------------------:|------------------:|------------------:|
+| llama3.3:70b |  pp512 | 41.65 ± 0.88 |             | 11091.32 ± 725.02 | 10654.30 ± 725.02 | 11091.32 ± 725.02 |
+| llama3.3:70b |  tg256 |  5.11 ± 0.01 | 6.00 ± 0.00 |                   |                   |                   |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 9, 12]
-  y-axis "W" 0 --> 43.33
-  line "CPU W" [4.3, 3.58, 3.59, 38.33, 0.25]
+  x-axis "Time (s)" [0, 3, 6, 11, 14, 20, 23, 25, 31, 34, 40, 42, 48, 51, 54, 60, 62, 68, 71, 77, 79, 82, 88, 91, 96, 99, 105, 108, 111, 116, 119, 125, 128, 133, 136, 139, 145, 148, 153, 156]
+  y-axis "W" 0 --> 16.59
+  line "CPU W" [3.98, 0.69, 6.93, 0.17, 0.11, 11.59, 0.2, 0.11, 0.99, 1.82, 0.12, 1.75, 0.29, 9.34, 0.44, 0.04, 3.23, 0.25, 0.31, 2.6, 6.14, 2.97, 0.17, 0.13, 3.9, 2.06, 0.21, 1.47, 5.16, 0.2, 0.12, 8.24, 0.12, 0.57, 3.3, 1.46, 0.11, 0.12, 2.24, 8.43]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.3 |
-| 3 | None | None | None | 3.58 |
-| 6 | None | None | None | 3.59 |
-| 9 | None | None | None | 38.33 |
-| 12 | None | None | None | 0.25 |
+| 0 | None | None | None | 3.98 |
+| 3 | None | None | None | 0.69 |
+| 6 | None | None | None | 6.93 |
+| 8 | None | None | None | 0.23 |
+| 11 | None | None | None | 0.17 |
+| 14 | None | None | None | 0.11 |
+| 17 | None | None | None | 0.45 |
+| 20 | None | None | None | 11.59 |
+| 23 | None | None | None | 0.2 |
+| 25 | None | None | None | 0.11 |
+| 28 | None | None | None | 0.12 |
+| 31 | None | None | None | 0.99 |
+| 34 | None | None | None | 1.82 |
+| 37 | None | None | None | 5.39 |
+| 40 | None | None | None | 0.12 |
+| 42 | None | None | None | 1.75 |
+| 45 | None | None | None | 0.12 |
+| 48 | None | None | None | 0.29 |
+| 51 | None | None | None | 9.34 |
+| 54 | None | None | None | 0.44 |
+| 57 | None | None | None | 0.04 |
+| 60 | None | None | None | 0.04 |
+| 62 | None | None | None | 3.23 |
+| 65 | None | None | None | 3.95 |
+| 68 | None | None | None | 0.25 |
+| 71 | None | None | None | 0.31 |
+| 74 | None | None | None | 0.18 |
+| 77 | None | None | None | 2.6 |
+| 79 | None | None | None | 6.14 |
+| 82 | None | None | None | 2.97 |
+| 85 | None | None | None | 0.19 |
+| 88 | None | None | None | 0.17 |
+| 91 | None | None | None | 0.13 |
+| 94 | None | None | None | 6.55 |
+| 96 | None | None | None | 3.9 |
+| 99 | None | None | None | 2.06 |
+| 102 | None | None | None | 0.04 |
+| 105 | None | None | None | 0.21 |
+| 108 | None | None | None | 1.47 |
+| 111 | None | None | None | 5.16 |
+| 113 | None | None | None | 0.18 |
+| 116 | None | None | None | 0.2 |
+| 119 | None | None | None | 0.12 |
+| 122 | None | None | None | 0.13 |
+| 125 | None | None | None | 8.24 |
+| 128 | None | None | None | 0.12 |
+| 131 | None | None | None | 0.14 |
+| 133 | None | None | None | 0.57 |
+| 136 | None | None | None | 3.3 |
+| 139 | None | None | None | 1.46 |
+| 142 | None | None | None | 6.37 |
+| 145 | None | None | None | 0.11 |
+| 148 | None | None | None | 0.12 |
+| 150 | None | None | None | 0.13 |
+| 153 | None | None | None | 2.24 |
+| 156 | None | None | None | 8.43 |
+| 159 | None | None | None | 0.45 |
 
 </details>
 
@@ -2521,36 +2635,88 @@ xychart-beta
 
 ## pp=2048 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:58:09
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |          ttfr (ms) |       est_ppt (ms) |      e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|-------------------:|-------------------:|-------------------:|
+| llama3.3:70b | pp2048 | 42.49 ± 0.50 |             | 44123.47 ± 1575.12 | 43685.85 ± 1575.12 | 44123.47 ± 1575.12 |
+| llama3.3:70b |   tg64 |  4.78 ± 0.01 | 5.00 ± 0.00 |                    |                    |                    |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 9, 11]
-  y-axis "W" 0 --> 47.35
-  line "CPU W" [4.55, 3.45, 1.42, 42.35, 3.15]
+  x-axis "Time (s)" [0, 3, 8, 11, 17, 20, 26, 31, 34, 40, 43, 48, 51, 57, 62, 65, 71, 74, 80, 82, 88, 94, 97, 102, 105, 111, 114, 119, 125, 128, 134, 136, 142, 145, 151, 156, 159, 165, 168, 173]
+  y-axis "W" 0 --> 14.11
+  line "CPU W" [5.14, 5.43, 0.03, 0.31, 6.68, 1.87, 0.19, 4.64, 3.26, 0.03, 0.07, 6.95, 0.14, 0.12, 5.52, 1.31, 0.05, 0.36, 0.12, 0.05, 0.18, 0.09, 0.09, 3.9, 7.82, 0.14, 0.22, 2.94, 0.03, 0.06, 0.53, 4.79, 0.1, 0.04, 9.11, 6.56, 0.06, 2.65, 2.85, 0.11]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.55 |
-| 3 | None | None | None | 3.45 |
-| 6 | None | None | None | 1.42 |
-| 9 | None | None | None | 42.35 |
-| 11 | None | None | None | 3.15 |
+| 0 | None | None | None | 5.14 |
+| 3 | None | None | None | 5.43 |
+| 6 | None | None | None | 0.12 |
+| 8 | None | None | None | 0.03 |
+| 11 | None | None | None | 0.31 |
+| 14 | None | None | None | 0.44 |
+| 17 | None | None | None | 6.68 |
+| 20 | None | None | None | 1.87 |
+| 23 | None | None | None | 0.67 |
+| 26 | None | None | None | 0.19 |
+| 28 | None | None | None | 0.1 |
+| 31 | None | None | None | 4.64 |
+| 34 | None | None | None | 3.26 |
+| 37 | None | None | None | 0.86 |
+| 40 | None | None | None | 0.03 |
+| 43 | None | None | None | 0.07 |
+| 45 | None | None | None | 1.12 |
+| 48 | None | None | None | 6.95 |
+| 51 | None | None | None | 0.14 |
+| 54 | None | None | None | 0.19 |
+| 57 | None | None | None | 0.12 |
+| 60 | None | None | None | 0.69 |
+| 62 | None | None | None | 5.52 |
+| 65 | None | None | None | 1.31 |
+| 68 | None | None | None | 0.12 |
+| 71 | None | None | None | 0.05 |
+| 74 | None | None | None | 0.36 |
+| 77 | None | None | None | 5.74 |
+| 80 | None | None | None | 0.12 |
+| 82 | None | None | None | 0.05 |
+| 85 | None | None | None | 0.06 |
+| 88 | None | None | None | 0.18 |
+| 91 | None | None | None | 7.39 |
+| 94 | None | None | None | 0.09 |
+| 97 | None | None | None | 0.09 |
+| 99 | None | None | None | 0.04 |
+| 102 | None | None | None | 3.9 |
+| 105 | None | None | None | 7.82 |
+| 108 | None | None | None | 1.51 |
+| 111 | None | None | None | 0.14 |
+| 114 | None | None | None | 0.22 |
+| 117 | None | None | None | 0.11 |
+| 119 | None | None | None | 2.94 |
+| 122 | None | None | None | 2.29 |
+| 125 | None | None | None | 0.03 |
+| 128 | None | None | None | 0.06 |
+| 131 | None | None | None | 0.06 |
+| 134 | None | None | None | 0.53 |
+| 136 | None | None | None | 4.79 |
+| 139 | None | None | None | 0.05 |
+| 142 | None | None | None | 0.1 |
+| 145 | None | None | None | 0.04 |
+| 148 | None | None | None | 0.1 |
+| 151 | None | None | None | 9.11 |
+| 154 | None | None | None | 0.24 |
+| 156 | None | None | None | 6.56 |
+| 159 | None | None | None | 0.06 |
+| 162 | None | None | None | 0.11 |
+| 165 | None | None | None | 2.65 |
+| 168 | None | None | None | 2.85 |
+| 171 | None | None | None | 3.23 |
+| 173 | None | None | None | 0.11 |
+| 176 | None | None | None | 0.16 |
 
 </details>
 
@@ -2558,36 +2724,131 @@ xychart-beta
 
 ## pp=2048 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 03:58:21
-Benchmarking model: llama3.3:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'llama3.3:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model        |   test |          t/s |    peak t/s |          ttfr (ms) |       est_ppt (ms) |      e2e_ttft (ms) |
+|:-------------|-------:|-------------:|------------:|-------------------:|-------------------:|-------------------:|
+| llama3.3:70b | pp2048 | 42.33 ± 0.45 |             | 43973.32 ± 1728.69 | 43536.51 ± 1728.69 | 43973.32 ± 1728.69 |
+| llama3.3:70b |  tg256 |  4.70 ± 0.13 | 5.00 ± 0.00 |                    |                    |                    |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 9, 12]
-  y-axis "W" 0 --> 47.61
-  line "CPU W" [4.36, 3.46, 2.54, 42.61, 0.47]
+  x-axis "Time (s)" [0, 6, 14, 20, 28, 37, 43, 51, 60, 65, 74, 82, 88, 97, 105, 111, 119, 128, 134, 142, 151, 156, 165, 170, 179, 188, 193, 202, 210, 216, 225, 233, 239, 247, 256, 262, 270, 279, 284, 293]
+  y-axis "W" 0 --> 9.89
+  line "CPU W" [4.0, 3.85, 0.06, 4.44, 0.05, 0.14, 3.98, 1.99, 0.27, 4.89, 0.37, 2.05, 0.14, 0.14, 0.05, 4.05, 0.05, 0.29, 0.06, 0.12, 1.16, 0.73, 0.2, 0.47, 0.12, 0.14, 0.11, 0.09, 2.25, 0.69, 0.27, 3.59, 0.2, 0.12, 1.86, 0.15, 0.24, 0.66, 0.19, 0.22]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.36 |
-| 3 | None | None | None | 3.46 |
-| 6 | None | None | None | 2.54 |
-| 9 | None | None | None | 42.61 |
-| 12 | None | None | None | 0.47 |
+| 0 | None | None | None | 4.0 |
+| 3 | None | None | None | 1.98 |
+| 6 | None | None | None | 3.85 |
+| 8 | None | None | None | 0.05 |
+| 11 | None | None | None | 0.05 |
+| 14 | None | None | None | 0.06 |
+| 17 | None | None | None | 1.03 |
+| 20 | None | None | None | 4.44 |
+| 23 | None | None | None | 0.06 |
+| 26 | None | None | None | 0.09 |
+| 28 | None | None | None | 0.05 |
+| 31 | None | None | None | 0.16 |
+| 34 | None | None | None | 9.04 |
+| 37 | None | None | None | 0.14 |
+| 40 | None | None | None | 2.17 |
+| 43 | None | None | None | 3.98 |
+| 45 | None | None | None | 0.24 |
+| 48 | None | None | None | 5.43 |
+| 51 | None | None | None | 1.99 |
+| 54 | None | None | None | 1.34 |
+| 57 | None | None | None | 0.14 |
+| 60 | None | None | None | 0.27 |
+| 62 | None | None | None | 4.37 |
+| 65 | None | None | None | 4.89 |
+| 68 | None | None | None | 0.16 |
+| 71 | None | None | None | 0.18 |
+| 74 | None | None | None | 0.37 |
+| 77 | None | None | None | 0.12 |
+| 79 | None | None | None | 4.93 |
+| 82 | None | None | None | 2.05 |
+| 85 | None | None | None | 0.14 |
+| 88 | None | None | None | 0.14 |
+| 91 | None | None | None | 1.25 |
+| 94 | None | None | None | 7.74 |
+| 97 | None | None | None | 0.14 |
+| 99 | None | None | None | 0.15 |
+| 102 | None | None | None | 0.11 |
+| 105 | None | None | None | 0.05 |
+| 108 | None | None | None | 1.47 |
+| 111 | None | None | None | 4.05 |
+| 114 | None | None | None | 0.04 |
+| 116 | None | None | None | 0.07 |
+| 119 | None | None | None | 0.05 |
+| 122 | None | None | None | 0.95 |
+| 125 | None | None | None | 7.04 |
+| 128 | None | None | None | 0.29 |
+| 131 | None | None | None | 0.03 |
+| 134 | None | None | None | 0.06 |
+| 136 | None | None | None | 1.01 |
+| 139 | None | None | None | 11.36 |
+| 142 | None | None | None | 0.12 |
+| 145 | None | None | None | 0.15 |
+| 148 | None | None | None | 0.15 |
+| 151 | None | None | None | 1.16 |
+| 153 | None | None | None | 4.97 |
+| 156 | None | None | None | 0.73 |
+| 159 | None | None | None | 5.66 |
+| 162 | None | None | None | 0.11 |
+| 165 | None | None | None | 0.2 |
+| 168 | None | None | None | 7.5 |
+| 170 | None | None | None | 0.47 |
+| 173 | None | None | None | 0.18 |
+| 176 | None | None | None | 0.14 |
+| 179 | None | None | None | 0.12 |
+| 182 | None | None | None | 4.0 |
+| 185 | None | None | None | 3.11 |
+| 188 | None | None | None | 0.14 |
+| 190 | None | None | None | 0.19 |
+| 193 | None | None | None | 0.11 |
+| 196 | None | None | None | 0.16 |
+| 199 | None | None | None | 5.39 |
+| 202 | None | None | None | 0.09 |
+| 205 | None | None | None | 0.05 |
+| 208 | None | None | None | 0.1 |
+| 210 | None | None | None | 2.25 |
+| 213 | None | None | None | 8.21 |
+| 216 | None | None | None | 0.69 |
+| 219 | None | None | None | 0.47 |
+| 222 | None | None | None | 0.04 |
+| 225 | None | None | None | 0.27 |
+| 227 | None | None | None | 6.07 |
+| 230 | None | None | None | 0.07 |
+| 233 | None | None | None | 3.59 |
+| 236 | None | None | None | 0.04 |
+| 239 | None | None | None | 0.2 |
+| 242 | None | None | None | 7.63 |
+| 245 | None | None | None | 0.26 |
+| 247 | None | None | None | 0.12 |
+| 250 | None | None | None | 0.11 |
+| 253 | None | None | None | 2.16 |
+| 256 | None | None | None | 1.86 |
+| 259 | None | None | None | 5.24 |
+| 262 | None | None | None | 0.15 |
+| 264 | None | None | None | 0.79 |
+| 267 | None | None | None | 0.11 |
+| 270 | None | None | None | 0.24 |
+| 273 | None | None | None | 4.88 |
+| 276 | None | None | None | 2.68 |
+| 279 | None | None | None | 0.66 |
+| 282 | None | None | None | 0.12 |
+| 284 | None | None | None | 0.19 |
+| 287 | None | None | None | 1.41 |
+| 290 | None | None | None | 5.65 |
+| 293 | None | None | None | 0.22 |
+| 296 | None | None | None | 2.62 |
+| 299 | None | None | None | 1.34 |
 
 </details>
 
@@ -2595,7 +2856,7 @@ xychart-beta
 
 # Benchmark Report: deepseek-r1:70b
 
-**Date:** 2026-04-28 04:15  
+**Date:** 2026-05-01 00:28  
 **Machine:** MacBook Pro M1 Max, 64GB unified memory, macOS 26.4.1  
 **Endpoint:** http://localhost:11434/v1  
 **Run platform:** Darwin 25.4.0 arm64  
@@ -2607,47 +2868,71 @@ xychart-beta
 
 | pp | tg | Duration (s) | GPU peak °C | CPU W peak |
 |---:|---:|---:|---:|---:|
-| 128 | 64 | 11 | 0 | 40.6 |
-| 128 | 256 | 11 | 0 | 39.85 |
-| 512 | 64 | 11 | 0 | 41.76 |
-| 512 | 256 | 10 | 0 | 34.46 |
-| 2048 | 64 | 11 | 0 | 42.23 |
-| 2048 | 256 | 11 | 0 | 36.24 |
+| 128 | 64 | 99 | 0 | 8.87 |
+| 128 | 256 | 123 | 0 | 7.29 |
+| 512 | 64 | 78 | 0 | 6.69 |
+| 512 | 256 | 200 | 0 | 9.79 |
+| 2048 | 64 | 182 | 0 | 7.99 |
+| 2048 | 256 | 314 | 0 | 8.31 |
 
 ---
 
 ## pp=128 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:13:58
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |        ttfr (ms) |     est_ppt (ms) |    e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|-----------------:|-----------------:|-----------------:|
+| deepseek-r1:70b |  pp128 | 54.77 ± 8.16 |             | 2609.76 ± 250.35 | 2258.67 ± 250.35 | 2609.76 ± 250.35 |
+| deepseek-r1:70b |   tg64 |  5.20 ± 0.00 | 6.00 ± 0.00 |                  |                  |                  |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=128 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 9, 11]
-  y-axis "W" 0 --> 45.6
-  line "CPU W" [4.42, 3.48, 1.58, 40.6, 0.12]
+  x-axis "Time (s)" [0, 3, 6, 8, 11, 14, 17, 20, 23, 26, 28, 31, 34, 37, 40, 43, 46, 48, 51, 54, 57, 60, 63, 65, 68, 71, 74, 77, 80, 83, 85, 88, 91, 94, 97]
+  y-axis "W" 0 --> 13.87
+  line "CPU W" [7.05, 4.3, 4.16, 4.07, 8.87, 8.71, 3.93, 6.14, 3.85, 3.9, 7.11, 8.01, 0.49, 1.91, 0.11, 0.1, 0.51, 6.39, 3.81, 0.16, 0.14, 0.1, 0.58, 6.15, 0.76, 1.12, 0.17, 2.04, 6.83, 3.22, 0.05, 0.27, 1.27, 0.12, 5.28]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 4.42 |
-| 3 | None | None | None | 3.48 |
-| 6 | None | None | None | 1.58 |
-| 9 | None | None | None | 40.6 |
-| 11 | None | None | None | 0.12 |
+| 0 | None | None | None | 7.05 |
+| 3 | None | None | None | 4.3 |
+| 6 | None | None | None | 4.16 |
+| 8 | None | None | None | 4.07 |
+| 11 | None | None | None | 8.87 |
+| 14 | None | None | None | 8.71 |
+| 17 | None | None | None | 3.93 |
+| 20 | None | None | None | 6.14 |
+| 23 | None | None | None | 3.85 |
+| 26 | None | None | None | 3.9 |
+| 28 | None | None | None | 7.11 |
+| 31 | None | None | None | 8.01 |
+| 34 | None | None | None | 0.49 |
+| 37 | None | None | None | 1.91 |
+| 40 | None | None | None | 0.11 |
+| 43 | None | None | None | 0.1 |
+| 46 | None | None | None | 0.51 |
+| 48 | None | None | None | 6.39 |
+| 51 | None | None | None | 3.81 |
+| 54 | None | None | None | 0.16 |
+| 57 | None | None | None | 0.14 |
+| 60 | None | None | None | 0.1 |
+| 63 | None | None | None | 0.58 |
+| 65 | None | None | None | 6.15 |
+| 68 | None | None | None | 0.76 |
+| 71 | None | None | None | 1.12 |
+| 74 | None | None | None | 0.17 |
+| 77 | None | None | None | 2.04 |
+| 80 | None | None | None | 6.83 |
+| 83 | None | None | None | 3.22 |
+| 85 | None | None | None | 0.05 |
+| 88 | None | None | None | 0.27 |
+| 91 | None | None | None | 1.27 |
+| 94 | None | None | None | 0.12 |
+| 97 | None | None | None | 5.28 |
 
 </details>
 
@@ -2655,35 +2940,69 @@ xychart-beta
 
 ## pp=128 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:14:10
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |        ttfr (ms) |     est_ppt (ms) |    e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|-----------------:|-----------------:|-----------------:|
+| deepseek-r1:70b |  pp128 | 48.99 ± 9.34 |             | 2918.00 ± 382.62 | 2526.85 ± 382.62 | 2918.00 ± 382.62 |
+| deepseek-r1:70b |  tg256 |  5.14 ± 0.03 | 6.00 ± 0.00 |                  |                  |                  |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=128 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 44.85
-  line "CPU W" [3.89, 3.25, 2.43, 39.85]
+  x-axis "Time (s)" [0, 3, 6, 8, 11, 14, 17, 20, 23, 26, 31, 34, 37, 40, 43, 46, 48, 51, 54, 57, 63, 66, 68, 71, 74, 77, 80, 83, 86, 88, 94, 97, 100, 103, 105, 108, 111, 114, 117, 120]
+  y-axis "W" 0 --> 12.29
+  line "CPU W" [5.38, 5.05, 2.37, 0.19, 0.23, 2.64, 0.98, 2.71, 5.56, 0.14, 7.29, 0.28, 4.51, 5.04, 0.7, 0.12, 0.13, 0.12, 4.8, 5.78, 0.54, 0.13, 0.13, 5.79, 1.98, 0.77, 0.11, 0.14, 0.11, 4.57, 0.12, 4.09, 0.73, 0.11, 0.14, 6.65, 0.21, 0.28, 0.13, 0.13]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 3.89 |
-| 3 | None | None | None | 3.25 |
-| 6 | None | None | None | 2.43 |
-| 9 | None | None | None | 39.85 |
+| 0 | None | None | None | 5.38 |
+| 3 | None | None | None | 5.05 |
+| 6 | None | None | None | 2.37 |
+| 8 | None | None | None | 0.19 |
+| 11 | None | None | None | 0.23 |
+| 14 | None | None | None | 2.64 |
+| 17 | None | None | None | 0.98 |
+| 20 | None | None | None | 2.71 |
+| 23 | None | None | None | 5.56 |
+| 26 | None | None | None | 0.14 |
+| 28 | None | None | None | 2.54 |
+| 31 | None | None | None | 7.29 |
+| 34 | None | None | None | 0.28 |
+| 37 | None | None | None | 4.51 |
+| 40 | None | None | None | 5.04 |
+| 43 | None | None | None | 0.7 |
+| 46 | None | None | None | 0.12 |
+| 48 | None | None | None | 0.13 |
+| 51 | None | None | None | 0.12 |
+| 54 | None | None | None | 4.8 |
+| 57 | None | None | None | 5.78 |
+| 60 | None | None | None | 0.14 |
+| 63 | None | None | None | 0.54 |
+| 66 | None | None | None | 0.13 |
+| 68 | None | None | None | 0.13 |
+| 71 | None | None | None | 5.79 |
+| 74 | None | None | None | 1.98 |
+| 77 | None | None | None | 0.77 |
+| 80 | None | None | None | 0.11 |
+| 83 | None | None | None | 0.14 |
+| 86 | None | None | None | 0.11 |
+| 88 | None | None | None | 4.57 |
+| 91 | None | None | None | 3.25 |
+| 94 | None | None | None | 0.12 |
+| 97 | None | None | None | 4.09 |
+| 100 | None | None | None | 0.73 |
+| 103 | None | None | None | 0.11 |
+| 105 | None | None | None | 0.14 |
+| 108 | None | None | None | 6.65 |
+| 111 | None | None | None | 0.21 |
+| 114 | None | None | None | 0.28 |
+| 117 | None | None | None | 0.13 |
+| 120 | None | None | None | 0.13 |
+| 123 | None | None | None | 0.04 |
 
 </details>
 
@@ -2691,35 +3010,53 @@ xychart-beta
 
 ## pp=512 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:14:20
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|----------------:|----------------:|----------------:|
+| deepseek-r1:70b |  pp512 | 38.52 ± 0.18 |             | 12255.34 ± 2.80 | 11863.63 ± 2.80 | 12255.34 ± 2.80 |
+| deepseek-r1:70b |   tg64 |  5.08 ± 0.02 | 6.00 ± 0.00 |                 |                 |                 |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 46.76
-  line "CPU W" [3.94, 3.25, 3.41, 41.76]
+  x-axis "Time (s)" [0, 3, 6, 9, 11, 14, 17, 20, 23, 26, 28, 31, 34, 37, 40, 43, 45, 48, 51, 54, 57, 60, 63, 65, 68, 71, 74, 77]
+  y-axis "W" 0 --> 11.690000000000001
+  line "CPU W" [6.69, 0.06, 0.05, 0.1, 3.52, 3.64, 0.85, 0.24, 0.12, 2.2, 6.43, 0.09, 0.07, 0.03, 0.1, 0.7, 6.18, 0.14, 0.14, 0.6, 0.69, 2.61, 6.29, 0.6, 0.24, 0.12, 0.16, 0.14]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 3.94 |
-| 3 | None | None | None | 3.25 |
-| 6 | None | None | None | 3.41 |
-| 9 | None | None | None | 41.76 |
+| 0 | None | None | None | 6.69 |
+| 3 | None | None | None | 0.06 |
+| 6 | None | None | None | 0.05 |
+| 9 | None | None | None | 0.1 |
+| 11 | None | None | None | 3.52 |
+| 14 | None | None | None | 3.64 |
+| 17 | None | None | None | 0.85 |
+| 20 | None | None | None | 0.24 |
+| 23 | None | None | None | 0.12 |
+| 26 | None | None | None | 2.2 |
+| 28 | None | None | None | 6.43 |
+| 31 | None | None | None | 0.09 |
+| 34 | None | None | None | 0.07 |
+| 37 | None | None | None | 0.03 |
+| 40 | None | None | None | 0.1 |
+| 43 | None | None | None | 0.7 |
+| 45 | None | None | None | 6.18 |
+| 48 | None | None | None | 0.14 |
+| 51 | None | None | None | 0.14 |
+| 54 | None | None | None | 0.6 |
+| 57 | None | None | None | 0.69 |
+| 60 | None | None | None | 2.61 |
+| 63 | None | None | None | 6.29 |
+| 65 | None | None | None | 0.6 |
+| 68 | None | None | None | 0.24 |
+| 71 | None | None | None | 0.12 |
+| 74 | None | None | None | 0.16 |
+| 77 | None | None | None | 0.14 |
 
 </details>
 
@@ -2727,35 +3064,95 @@ xychart-beta
 
 ## pp=512 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:14:31
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |         ttfr (ms) |      est_ppt (ms) |     e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|------------------:|------------------:|------------------:|
+| deepseek-r1:70b |  pp512 | 39.22 ± 0.22 |             | 11928.68 ± 326.29 | 11539.42 ± 326.29 | 11928.68 ± 326.29 |
+| deepseek-r1:70b |  tg256 |  4.76 ± 0.07 | 6.00 ± 0.00 |                   |                   |                   |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 39.46
-  line "CPU W" [3.9, 3.19, 2.96, 34.46]
+  x-axis "Time (s)" [0, 3, 8, 14, 20, 23, 28, 34, 40, 43, 48, 54, 60, 63, 69, 74, 80, 83, 89, 94, 100, 103, 109, 115, 120, 123, 129, 135, 141, 143, 149, 155, 161, 164, 169, 175, 181, 184, 190, 195]
+  y-axis "W" 0 --> 11.86
+  line "CPU W" [4.02, 1.5, 3.36, 0.04, 0.18, 0.37, 5.11, 0.14, 0.13, 0.56, 3.42, 0.69, 0.9, 4.84, 0.27, 3.38, 0.17, 0.2, 1.83, 0.18, 0.62, 0.21, 0.17, 0.16, 6.14, 0.17, 6.86, 5.5, 0.05, 0.38, 5.33, 0.34, 3.14, 3.59, 0.18, 2.34, 0.2, 0.37, 0.18, 3.29]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 3.9 |
-| 3 | None | None | None | 3.19 |
-| 6 | None | None | None | 2.96 |
-| 9 | None | None | None | 34.46 |
+| 0 | None | None | None | 4.02 |
+| 3 | None | None | None | 1.5 |
+| 6 | None | None | None | 0.04 |
+| 8 | None | None | None | 3.36 |
+| 11 | None | None | None | 8.91 |
+| 14 | None | None | None | 0.04 |
+| 17 | None | None | None | 0.29 |
+| 20 | None | None | None | 0.18 |
+| 23 | None | None | None | 0.37 |
+| 26 | None | None | None | 3.36 |
+| 28 | None | None | None | 5.11 |
+| 31 | None | None | None | 0.42 |
+| 34 | None | None | None | 0.14 |
+| 37 | None | None | None | 0.2 |
+| 40 | None | None | None | 0.13 |
+| 43 | None | None | None | 0.56 |
+| 46 | None | None | None | 3.31 |
+| 48 | None | None | None | 3.42 |
+| 51 | None | None | None | 3.7 |
+| 54 | None | None | None | 0.69 |
+| 57 | None | None | None | 0.71 |
+| 60 | None | None | None | 0.9 |
+| 63 | None | None | None | 4.84 |
+| 66 | None | None | None | 0.17 |
+| 69 | None | None | None | 0.27 |
+| 71 | None | None | None | 4.14 |
+| 74 | None | None | None | 3.38 |
+| 77 | None | None | None | 2.97 |
+| 80 | None | None | None | 0.17 |
+| 83 | None | None | None | 0.2 |
+| 86 | None | None | None | 0.61 |
+| 89 | None | None | None | 1.83 |
+| 92 | None | None | None | 5.02 |
+| 94 | None | None | None | 0.18 |
+| 97 | None | None | None | 0.19 |
+| 100 | None | None | None | 0.62 |
+| 103 | None | None | None | 0.21 |
+| 106 | None | None | None | 5.49 |
+| 109 | None | None | None | 0.17 |
+| 112 | None | None | None | 0.19 |
+| 115 | None | None | None | 0.16 |
+| 117 | None | None | None | 0.21 |
+| 120 | None | None | None | 6.14 |
+| 123 | None | None | None | 0.17 |
+| 126 | None | None | None | 0.3 |
+| 129 | None | None | None | 6.86 |
+| 132 | None | None | None | 1.48 |
+| 135 | None | None | None | 5.5 |
+| 138 | None | None | None | 0.05 |
+| 141 | None | None | None | 0.05 |
+| 143 | None | None | None | 0.38 |
+| 146 | None | None | None | 2.77 |
+| 149 | None | None | None | 5.33 |
+| 152 | None | None | None | 0.52 |
+| 155 | None | None | None | 0.34 |
+| 158 | None | None | None | 2.28 |
+| 161 | None | None | None | 3.14 |
+| 164 | None | None | None | 3.59 |
+| 167 | None | None | None | 0.15 |
+| 169 | None | None | None | 0.18 |
+| 172 | None | None | None | 0.13 |
+| 175 | None | None | None | 2.34 |
+| 178 | None | None | None | 4.21 |
+| 181 | None | None | None | 0.2 |
+| 184 | None | None | None | 0.37 |
+| 187 | None | None | None | 1.69 |
+| 190 | None | None | None | 0.18 |
+| 192 | None | None | None | 9.79 |
+| 195 | None | None | None | 3.29 |
+| 198 | None | None | None | 0.14 |
 
 </details>
 
@@ -2763,35 +3160,89 @@ xychart-beta
 
 ## pp=2048 tg=64
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:14:42
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |         ttfr (ms) |      est_ppt (ms) |     e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|------------------:|------------------:|------------------:|
+| deepseek-r1:70b | pp2048 | 41.04 ± 0.37 |             | 44976.77 ± 789.16 | 44582.99 ± 789.16 | 44976.77 ± 789.16 |
+| deepseek-r1:70b |   tg64 |  4.34 ± 0.01 | 5.00 ± 0.00 |                   |                   |                   |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=64"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 47.23
-  line "CPU W" [3.92, 3.35, 3.44, 42.23]
+  x-axis "Time (s)" [0, 3, 9, 12, 17, 23, 26, 32, 35, 40, 46, 49, 55, 58, 63, 69, 72, 78, 81, 86, 92, 95, 101, 103, 109, 115, 118, 123, 126, 132, 138, 140, 146, 149, 155, 160, 163, 169, 172, 178]
+  y-axis "W" 0 --> 12.23
+  line "CPU W" [7.15, 4.11, 0.05, 0.04, 4.68, 0.61, 0.55, 2.16, 0.07, 0.04, 1.54, 0.07, 4.44, 5.35, 4.78, 1.82, 6.02, 0.15, 0.05, 2.75, 0.03, 4.57, 7.23, 4.04, 0.12, 0.11, 4.59, 0.05, 1.49, 0.04, 5.96, 1.1, 0.04, 0.03, 5.55, 0.23, 0.08, 6.86, 0.22, 0.12]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 3.92 |
-| 3 | None | None | None | 3.35 |
-| 6 | None | None | None | 3.44 |
-| 9 | None | None | None | 42.23 |
+| 0 | None | None | None | 7.15 |
+| 3 | None | None | None | 4.11 |
+| 6 | None | None | None | 2.71 |
+| 9 | None | None | None | 0.05 |
+| 12 | None | None | None | 0.04 |
+| 14 | None | None | None | 0.51 |
+| 17 | None | None | None | 4.68 |
+| 20 | None | None | None | 1.42 |
+| 23 | None | None | None | 0.61 |
+| 26 | None | None | None | 0.55 |
+| 29 | None | None | None | 4.04 |
+| 32 | None | None | None | 2.16 |
+| 35 | None | None | None | 0.07 |
+| 37 | None | None | None | 0.04 |
+| 40 | None | None | None | 0.04 |
+| 43 | None | None | None | 7.99 |
+| 46 | None | None | None | 1.54 |
+| 49 | None | None | None | 0.07 |
+| 52 | None | None | None | 0.12 |
+| 55 | None | None | None | 4.44 |
+| 58 | None | None | None | 5.35 |
+| 60 | None | None | None | 0.12 |
+| 63 | None | None | None | 4.78 |
+| 66 | None | None | None | 0.07 |
+| 69 | None | None | None | 1.82 |
+| 72 | None | None | None | 6.02 |
+| 75 | None | None | None | 0.43 |
+| 78 | None | None | None | 0.15 |
+| 81 | None | None | None | 0.05 |
+| 84 | None | None | None | 4.5 |
+| 86 | None | None | None | 2.75 |
+| 89 | None | None | None | 0.08 |
+| 92 | None | None | None | 0.03 |
+| 95 | None | None | None | 4.57 |
+| 98 | None | None | None | 0.05 |
+| 101 | None | None | None | 7.23 |
+| 103 | None | None | None | 4.04 |
+| 106 | None | None | None | 0.98 |
+| 109 | None | None | None | 0.12 |
+| 112 | None | None | None | 3.86 |
+| 115 | None | None | None | 0.11 |
+| 118 | None | None | None | 4.59 |
+| 121 | None | None | None | 5.15 |
+| 123 | None | None | None | 0.05 |
+| 126 | None | None | None | 1.49 |
+| 129 | None | None | None | 0.11 |
+| 132 | None | None | None | 0.04 |
+| 135 | None | None | None | 2.31 |
+| 138 | None | None | None | 5.96 |
+| 140 | None | None | None | 1.1 |
+| 143 | None | None | None | 0.14 |
+| 146 | None | None | None | 0.04 |
+| 149 | None | None | None | 0.03 |
+| 152 | None | None | None | 4.41 |
+| 155 | None | None | None | 5.55 |
+| 158 | None | None | None | 0.06 |
+| 160 | None | None | None | 0.23 |
+| 163 | None | None | None | 0.08 |
+| 166 | None | None | None | 0.04 |
+| 169 | None | None | None | 6.86 |
+| 172 | None | None | None | 0.22 |
+| 175 | None | None | None | 0.1 |
+| 178 | None | None | None | 0.12 |
+| 180 | None | None | None | 0.11 |
 
 </details>
 
@@ -2799,35 +3250,136 @@ xychart-beta
 
 ## pp=2048 tg=256
 
-llama-benchy (0.3.7)
-Date: 2026-04-28 04:14:52
-Benchmarking model: deepseek-r1:70b at http://localhost:11434/v1
-Concurrency levels: [1]
-Error loading tokenizer: Repo id must use alphanumeric chars, '-', '_' or '.'. The name cannot start or end with '-' or '.' and the maximum length is 96: 'deepseek-r1:70b'.
-Falling back to 'gpt2' tokenizer as approximation.
-Loading text from cache: /Users/llm-worker/.cache/llama-benchy/cc6a0b5782734ee3b9069aa3b64cc62c.txt
-Total tokens available in text corpus: 159385
-Warming up...
-Warmup failed: HTTP 500: {"error":{"message":"model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details","type":"api_error","param":null,"code":null}}
+| model           |   test |          t/s |    peak t/s |          ttfr (ms) |       est_ppt (ms) |      e2e_ttft (ms) |
+|:----------------|-------:|-------------:|------------:|-------------------:|-------------------:|-------------------:|
+| deepseek-r1:70b | pp2048 | 40.63 ± 0.46 |             | 44675.09 ± 3312.86 | 44284.26 ± 3312.86 | 44675.09 ± 3312.86 |
+| deepseek-r1:70b |  tg256 |  4.38 ± 0.03 | 5.00 ± 0.00 |                    |                    |                    |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=256"
-  x-axis "Time (s)" [0, 3, 6, 9]
-  y-axis "W" 0 --> 41.24
-  line "CPU W" [3.88, 3.32, 3.31, 36.24]
+  x-axis "Time (s)" [0, 6, 14, 23, 31, 37, 45, 54, 62, 68, 77, 85, 94, 102, 108, 117, 125, 134, 139, 148, 156, 165, 173, 179, 188, 196, 205, 210, 219, 227, 236, 245, 250, 259, 267, 276, 282, 290, 299, 307]
+  y-axis "W" 0 --> 13.13
+  line "CPU W" [5.34, 0.04, 4.49, 0.56, 2.25, 0.75, 0.06, 0.17, 0.2, 4.36, 0.11, 4.49, 0.18, 6.6, 0.69, 3.09, 3.98, 5.55, 0.14, 1.19, 0.14, 0.93, 3.49, 0.12, 5.15, 0.13, 2.33, 3.8, 0.05, 7.78, 0.47, 8.13, 0.18, 0.11, 0.28, 0.16, 6.23, 0.11, 5.65, 0.12]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 3.88 |
-| 3 | None | None | None | 3.32 |
-| 6 | None | None | None | 3.31 |
-| 9 | None | None | None | 36.24 |
+| 0 | None | None | None | 5.34 |
+| 3 | None | None | None | 0.81 |
+| 6 | None | None | None | 0.04 |
+| 9 | None | None | None | 0.21 |
+| 11 | None | None | None | 0.8 |
+| 14 | None | None | None | 4.49 |
+| 17 | None | None | None | 3.86 |
+| 20 | None | None | None | 0.05 |
+| 23 | None | None | None | 0.56 |
+| 26 | None | None | None | 0.05 |
+| 28 | None | None | None | 0.03 |
+| 31 | None | None | None | 2.25 |
+| 34 | None | None | None | 5.75 |
+| 37 | None | None | None | 0.75 |
+| 40 | None | None | None | 0.6 |
+| 43 | None | None | None | 0.18 |
+| 45 | None | None | None | 0.06 |
+| 48 | None | None | None | 8.31 |
+| 51 | None | None | None | 2.21 |
+| 54 | None | None | None | 0.17 |
+| 57 | None | None | None | 0.11 |
+| 60 | None | None | None | 0.11 |
+| 62 | None | None | None | 0.2 |
+| 65 | None | None | None | 4.15 |
+| 68 | None | None | None | 4.36 |
+| 71 | None | None | None | 0.65 |
+| 74 | None | None | None | 0.12 |
+| 77 | None | None | None | 0.11 |
+| 80 | None | None | None | 0.12 |
+| 82 | None | None | None | 3.39 |
+| 85 | None | None | None | 4.49 |
+| 88 | None | None | None | 0.14 |
+| 91 | None | None | None | 0.06 |
+| 94 | None | None | None | 0.18 |
+| 97 | None | None | None | 0.47 |
+| 99 | None | None | None | 1.02 |
+| 102 | None | None | None | 6.6 |
+| 105 | None | None | None | 0.14 |
+| 108 | None | None | None | 0.69 |
+| 111 | None | None | None | 0.1 |
+| 114 | None | None | None | 3.58 |
+| 117 | None | None | None | 3.09 |
+| 119 | None | None | None | 2.07 |
+| 122 | None | None | None | 0.04 |
+| 125 | None | None | None | 3.98 |
+| 128 | None | None | None | 0.03 |
+| 131 | None | None | None | 0.04 |
+| 134 | None | None | None | 5.55 |
+| 136 | None | None | None | 2.31 |
+| 139 | None | None | None | 0.14 |
+| 142 | None | None | None | 0.04 |
+| 145 | None | None | None | 0.09 |
+| 148 | None | None | None | 1.19 |
+| 151 | None | None | None | 1.16 |
+| 153 | None | None | None | 6.24 |
+| 156 | None | None | None | 0.14 |
+| 159 | None | None | None | 0.05 |
+| 162 | None | None | None | 0.12 |
+| 165 | None | None | None | 0.93 |
+| 168 | None | None | None | 4.6 |
+| 171 | None | None | None | 6.0 |
+| 173 | None | None | None | 3.49 |
+| 176 | None | None | None | 0.11 |
+| 179 | None | None | None | 0.12 |
+| 182 | None | None | None | 0.14 |
+| 185 | None | None | None | 0.12 |
+| 188 | None | None | None | 5.15 |
+| 191 | None | None | None | 2.87 |
+| 193 | None | None | None | 0.22 |
+| 196 | None | None | None | 0.13 |
+| 199 | None | None | None | 0.14 |
+| 202 | None | None | None | 0.23 |
+| 205 | None | None | None | 2.33 |
+| 208 | None | None | None | 6.17 |
+| 210 | None | None | None | 3.8 |
+| 213 | None | None | None | 1.38 |
+| 216 | None | None | None | 0.04 |
+| 219 | None | None | None | 0.05 |
+| 222 | None | None | None | 0.36 |
+| 225 | None | None | None | 4.28 |
+| 227 | None | None | None | 7.78 |
+| 230 | None | None | None | 0.06 |
+| 233 | None | None | None | 0.03 |
+| 236 | None | None | None | 0.47 |
+| 239 | None | None | None | 0.1 |
+| 242 | None | None | None | 0.36 |
+| 245 | None | None | None | 8.13 |
+| 247 | None | None | None | 0.08 |
+| 250 | None | None | None | 0.18 |
+| 253 | None | None | None | 1.18 |
+| 256 | None | None | None | 0.13 |
+| 259 | None | None | None | 0.11 |
+| 262 | None | None | None | 5.03 |
+| 264 | None | None | None | 1.09 |
+| 267 | None | None | None | 0.28 |
+| 270 | None | None | None | 0.12 |
+| 273 | None | None | None | 0.52 |
+| 276 | None | None | None | 0.16 |
+| 279 | None | None | None | 2.63 |
+| 282 | None | None | None | 6.23 |
+| 284 | None | None | None | 0.98 |
+| 287 | None | None | None | 3.49 |
+| 290 | None | None | None | 0.11 |
+| 293 | None | None | None | 0.12 |
+| 296 | None | None | None | 2.06 |
+| 299 | None | None | None | 5.65 |
+| 301 | None | None | None | 1.51 |
+| 304 | None | None | None | 0.2 |
+| 307 | None | None | None | 0.12 |
+| 310 | None | None | None | 0.21 |
+| 313 | None | None | None | 1.41 |
 
 </details>
 
@@ -2835,7 +3387,7 @@ xychart-beta
 
 # Benchmark Report: qwen3:8b
 
-**Date:** 2026-04-28 14:32  
+**Date:** 2026-04-28 21:43  
 **Machine:** MacBook Pro M1 Max, 64GB unified memory, macOS 26.4.1  
 **Endpoint:** http://100.100.179.46:11434/v1  
 **Run platform:** Darwin 25.3.0 arm64  
@@ -2847,10 +3399,10 @@ xychart-beta
 
 | pp | tg | Duration (s) | GPU peak °C | CPU W peak |
 |---:|---:|---:|---:|---:|
-| 512 | 64 | 101 | 0 | 2.39 |
-| 512 | 256 | 96 | 0 | 4.69 |
-| 2048 | 64 | 65 | 0 | 3.49 |
-| 2048 | 256 | 58 | 0 | 7.7 |
+| 512 | 64 | 91 | 0 | 2.21 |
+| 512 | 256 | 48 | 0 | 2.98 |
+| 2048 | 64 | 36 | 0 | 2.52 |
+| 2048 | 256 | 44 | 0 | 6.06 |
 
 ---
 
@@ -2858,64 +3410,60 @@ xychart-beta
 
 | model    |   test |            t/s |     peak t/s |       ttfr (ms) |   est_ppt (ms) |   e2e_ttft (ms) |
 |:---------|-------:|---------------:|-------------:|----------------:|---------------:|----------------:|
-| qwen3:8b |  pp512 | 465.14 ± 21.76 |              | 1081.23 ± 26.20 | 946.79 ± 26.20 | 1081.23 ± 26.20 |
-| qwen3:8b |   tg64 |   40.60 ± 0.08 | 41.00 ± 0.00 |                 |                |                 |
+| qwen3:8b |  pp512 | 494.61 ± 65.30 |              | 1046.58 ± 64.89 | 932.29 ± 64.89 | 1046.58 ± 64.89 |
+| qwen3:8b |   tg64 |   40.81 ± 0.04 | 41.00 ± 0.00 |                 |                |                 |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=64"
-  x-axis "Time (s)" [0, 3, 5, 8, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65, 67, 70, 72, 75, 77, 80, 82, 85, 87, 90, 92, 95, 97]
-  y-axis "W" 0 --> 7.390000000000001
-  line "CPU W" [0.3, 0.3, 1.4, 0.26, 1.34, 0.44, 2.39, 0.31, 1.76, 0.76, 1.73, 0.4, 0.6, 1.61, 0.53, 1.36, 0.49, 0.3, 0.5, 1.08, 1.52, 1.44, 0.69, 1.39, 0.37, 0.58, 0.34, 0.36, 2.3, 0.72, 1.58, 0.61, 0.63, 0.41, 2.22, 0.38, 0.83, 0.26, 1.63, 0.11]
+  x-axis "Time (s)" [0, 3, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65, 67, 70, 72, 75, 77, 80, 82, 85, 87, 90]
+  y-axis "W" 0 --> 7.21
+  line "CPU W" [1.21, 0.46, 0.95, 0.31, 0.83, 0.55, 1.36, 0.44, 1.62, 1.04, 1.09, 1.62, 0.87, 1.52, 0.86, 1.07, 0.58, 0.73, 0.98, 1.29, 0.57, 1.07, 0.42, 0.54, 0.94, 1.52, 1.57, 2.21, 2.14, 0.59, 1.58, 0.17, 0.59, 0.49, 0.4, 0.18, 0.39]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 0.3 |
-| 3 | None | None | None | 0.3 |
-| 5 | None | None | None | 1.4 |
-| 8 | None | None | None | 0.26 |
-| 10 | None | None | None | 1.34 |
-| 12 | None | None | None | 0.44 |
-| 15 | None | None | None | 2.39 |
-| 17 | None | None | None | 0.31 |
-| 20 | None | None | None | 1.76 |
-| 22 | None | None | None | 0.76 |
-| 25 | None | None | None | 1.73 |
-| 27 | None | None | None | 0.4 |
-| 30 | None | None | None | 0.6 |
-| 32 | None | None | None | 1.61 |
-| 35 | None | None | None | 0.53 |
-| 37 | None | None | None | 1.36 |
-| 40 | None | None | None | 0.49 |
-| 42 | None | None | None | 0.3 |
-| 45 | None | None | None | 0.5 |
-| 47 | None | None | None | 1.08 |
-| 50 | None | None | None | 1.52 |
-| 52 | None | None | None | 1.44 |
-| 55 | None | None | None | 0.69 |
-| 57 | None | None | None | 1.39 |
-| 60 | None | None | None | 0.37 |
-| 62 | None | None | None | 0.58 |
-| 65 | None | None | None | 0.34 |
-| 67 | None | None | None | 0.36 |
-| 70 | None | None | None | 2.3 |
-| 72 | None | None | None | 0.72 |
+| 0 | None | None | None | 1.21 |
+| 3 | None | None | None | 0.46 |
+| 5 | None | None | None | 0.95 |
+| 7 | None | None | None | 0.31 |
+| 10 | None | None | None | 0.83 |
+| 12 | None | None | None | 0.55 |
+| 15 | None | None | None | 1.36 |
+| 17 | None | None | None | 0.44 |
+| 20 | None | None | None | 1.62 |
+| 22 | None | None | None | 1.04 |
+| 25 | None | None | None | 1.09 |
+| 27 | None | None | None | 1.62 |
+| 30 | None | None | None | 0.87 |
+| 32 | None | None | None | 1.52 |
+| 35 | None | None | None | 0.86 |
+| 37 | None | None | None | 1.07 |
+| 40 | None | None | None | 0.58 |
+| 42 | None | None | None | 0.73 |
+| 45 | None | None | None | 0.98 |
+| 47 | None | None | None | 1.29 |
+| 50 | None | None | None | 0.57 |
+| 52 | None | None | None | 1.07 |
+| 55 | None | None | None | 0.42 |
+| 57 | None | None | None | 0.54 |
+| 60 | None | None | None | 0.94 |
+| 62 | None | None | None | 1.52 |
+| 65 | None | None | None | 1.57 |
+| 67 | None | None | None | 2.21 |
+| 70 | None | None | None | 2.14 |
+| 72 | None | None | None | 0.59 |
 | 75 | None | None | None | 1.58 |
-| 77 | None | None | None | 0.61 |
-| 80 | None | None | None | 0.63 |
-| 82 | None | None | None | 0.41 |
-| 85 | None | None | None | 2.22 |
-| 87 | None | None | None | 0.38 |
-| 90 | None | None | None | 0.83 |
-| 92 | None | None | None | 0.26 |
-| 95 | None | None | None | 1.63 |
-| 97 | None | None | None | 0.11 |
-| 100 | None | None | None | 1.13 |
+| 77 | None | None | None | 0.17 |
+| 80 | None | None | None | 0.59 |
+| 82 | None | None | None | 0.49 |
+| 85 | None | None | None | 0.4 |
+| 87 | None | None | None | 0.18 |
+| 90 | None | None | None | 0.39 |
 
 </details>
 
@@ -2923,64 +3471,45 @@ xychart-beta
 
 ## pp=512 tg=256
 
-| model    |   test |           t/s |     peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
-|:---------|-------:|--------------:|-------------:|----------------:|----------------:|----------------:|
-| qwen3:8b |  pp512 | 464.41 ± 9.91 |              | 1121.93 ± 75.68 | 1011.24 ± 75.68 | 1121.93 ± 75.68 |
-| qwen3:8b |  tg256 |  40.45 ± 0.11 | 41.00 ± 0.00 |                 |                 |                 |
+| model    |   test |            t/s |     peak t/s |       ttfr (ms) |   est_ppt (ms) |   e2e_ttft (ms) |
+|:---------|-------:|---------------:|-------------:|----------------:|---------------:|----------------:|
+| qwen3:8b |  pp512 | 473.43 ± 10.84 |              | 1103.64 ± 55.11 | 992.74 ± 55.11 | 1103.64 ± 55.11 |
+| qwen3:8b |  tg256 |   40.38 ± 0.08 | 41.33 ± 0.47 |                 |                |                 |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=512 tg=256"
-  x-axis "Time (s)" [0, 3, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65, 67, 70, 72, 75, 77, 80, 82, 85, 87, 90, 92, 95]
-  y-axis "W" 0 --> 9.690000000000001
-  line "CPU W" [0.64, 0.31, 0.58, 0.37, 2.92, 1.39, 4.69, 0.28, 1.26, 0.29, 0.82, 1.3, 0.47, 0.82, 0.44, 0.47, 0.31, 0.29, 0.34, 1.22, 0.9, 1.93, 1.42, 1.47, 1.44, 0.96, 0.61, 0.64, 1.71, 1.2, 0.26, 0.39, 0.38, 0.45, 0.47, 1.47, 0.29, 1.15, 0.18]
+  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 38, 40, 43, 45, 48]
+  y-axis "W" 0 --> 7.98
+  line "CPU W" [0.68, 0.48, 0.41, 2.98, 0.36, 1.41, 1.44, 0.5, 0.45, 0.9, 0.15, 0.61, 0.21, 0.18, 0.66, 0.25, 0.55, 0.16, 0.42, 0.26]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 0.64 |
-| 3 | None | None | None | 0.31 |
-| 5 | None | None | None | 0.58 |
-| 7 | None | None | None | 0.37 |
-| 10 | None | None | None | 2.92 |
-| 12 | None | None | None | 1.39 |
-| 15 | None | None | None | 4.69 |
-| 17 | None | None | None | 0.28 |
-| 20 | None | None | None | 1.26 |
-| 22 | None | None | None | 0.29 |
-| 25 | None | None | None | 0.82 |
-| 27 | None | None | None | 1.3 |
-| 30 | None | None | None | 0.47 |
-| 32 | None | None | None | 0.82 |
-| 35 | None | None | None | 0.44 |
-| 37 | None | None | None | 0.47 |
-| 40 | None | None | None | 0.31 |
-| 42 | None | None | None | 0.29 |
-| 45 | None | None | None | 0.34 |
-| 47 | None | None | None | 1.22 |
-| 50 | None | None | None | 0.9 |
-| 52 | None | None | None | 1.93 |
-| 55 | None | None | None | 1.42 |
-| 57 | None | None | None | 1.47 |
-| 60 | None | None | None | 1.44 |
-| 62 | None | None | None | 0.96 |
-| 65 | None | None | None | 0.61 |
-| 67 | None | None | None | 0.64 |
-| 70 | None | None | None | 1.71 |
-| 72 | None | None | None | 1.2 |
-| 75 | None | None | None | 0.26 |
-| 77 | None | None | None | 0.39 |
-| 80 | None | None | None | 0.38 |
-| 82 | None | None | None | 0.45 |
-| 85 | None | None | None | 0.47 |
-| 87 | None | None | None | 1.47 |
-| 90 | None | None | None | 0.29 |
-| 92 | None | None | None | 1.15 |
-| 95 | None | None | None | 0.18 |
+| 0 | None | None | None | 0.68 |
+| 2 | None | None | None | 0.48 |
+| 5 | None | None | None | 0.41 |
+| 7 | None | None | None | 2.98 |
+| 10 | None | None | None | 0.36 |
+| 12 | None | None | None | 1.41 |
+| 15 | None | None | None | 1.44 |
+| 17 | None | None | None | 0.5 |
+| 20 | None | None | None | 0.45 |
+| 22 | None | None | None | 0.9 |
+| 25 | None | None | None | 0.15 |
+| 27 | None | None | None | 0.61 |
+| 30 | None | None | None | 0.21 |
+| 32 | None | None | None | 0.18 |
+| 35 | None | None | None | 0.66 |
+| 38 | None | None | None | 0.25 |
+| 40 | None | None | None | 0.55 |
+| 43 | None | None | None | 0.16 |
+| 45 | None | None | None | 0.42 |
+| 48 | None | None | None | 0.26 |
 
 </details>
 
@@ -2990,50 +3519,38 @@ xychart-beta
 
 | model    |   test |           t/s |     peak t/s |        ttfr (ms) |     est_ppt (ms) |    e2e_ttft (ms) |
 |:---------|-------:|--------------:|-------------:|-----------------:|-----------------:|-----------------:|
-| qwen3:8b | pp2048 | 446.34 ± 5.78 |              | 4222.55 ± 185.92 | 4110.61 ± 185.92 | 4222.55 ± 185.92 |
-| qwen3:8b |   tg64 |  35.95 ± 0.50 | 36.67 ± 0.47 |                  |                  |                  |
+| qwen3:8b | pp2048 | 448.86 ± 4.14 |              | 4192.81 ± 264.00 | 4081.65 ± 264.00 | 4192.81 ± 264.00 |
+| qwen3:8b |   tg64 |  35.93 ± 0.65 | 36.33 ± 0.47 |                  |                  |                  |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=64"
-  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35, 37, 40, 42, 45, 47, 50, 52, 55, 57, 60, 62, 65]
-  y-axis "W" 0 --> 8.49
-  line "CPU W" [1.5, 0.93, 3.14, 0.48, 1.18, 1.33, 0.72, 0.51, 0.34, 0.48, 0.49, 2.08, 0.24, 3.49, 0.34, 1.96, 1.67, 1.35, 0.4, 0.56, 0.22, 0.41, 1.06, 0.35, 0.13, 0.45, 0.23]
+  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 33, 35]
+  y-axis "W" 0 --> 7.52
+  line "CPU W" [1.11, 0.39, 0.52, 0.44, 0.71, 2.52, 0.35, 1.5, 0.32, 1.57, 0.2, 1.57, 0.41, 1.1, 0.77]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 1.5 |
-| 2 | None | None | None | 0.93 |
-| 5 | None | None | None | 3.14 |
-| 7 | None | None | None | 0.48 |
-| 10 | None | None | None | 1.18 |
-| 12 | None | None | None | 1.33 |
-| 15 | None | None | None | 0.72 |
-| 17 | None | None | None | 0.51 |
-| 20 | None | None | None | 0.34 |
-| 22 | None | None | None | 0.48 |
-| 25 | None | None | None | 0.49 |
-| 27 | None | None | None | 2.08 |
-| 30 | None | None | None | 0.24 |
-| 32 | None | None | None | 3.49 |
-| 35 | None | None | None | 0.34 |
-| 37 | None | None | None | 1.96 |
-| 40 | None | None | None | 1.67 |
-| 42 | None | None | None | 1.35 |
-| 45 | None | None | None | 0.4 |
-| 47 | None | None | None | 0.56 |
-| 50 | None | None | None | 0.22 |
-| 52 | None | None | None | 0.41 |
-| 55 | None | None | None | 1.06 |
-| 57 | None | None | None | 0.35 |
-| 60 | None | None | None | 0.13 |
-| 62 | None | None | None | 0.45 |
-| 65 | None | None | None | 0.23 |
+| 0 | None | None | None | 1.11 |
+| 2 | None | None | None | 0.39 |
+| 5 | None | None | None | 0.52 |
+| 7 | None | None | None | 0.44 |
+| 10 | None | None | None | 0.71 |
+| 12 | None | None | None | 2.52 |
+| 15 | None | None | None | 0.35 |
+| 17 | None | None | None | 1.5 |
+| 20 | None | None | None | 0.32 |
+| 22 | None | None | None | 1.57 |
+| 25 | None | None | None | 0.2 |
+| 27 | None | None | None | 1.57 |
+| 30 | None | None | None | 0.41 |
+| 33 | None | None | None | 1.1 |
+| 35 | None | None | None | 0.77 |
 
 </details>
 
@@ -3043,47 +3560,41 @@ xychart-beta
 
 | model    |   test |           t/s |     peak t/s |       ttfr (ms) |    est_ppt (ms) |   e2e_ttft (ms) |
 |:---------|-------:|--------------:|-------------:|----------------:|----------------:|----------------:|
-| qwen3:8b | pp2048 | 449.06 ± 2.10 |              | 4104.59 ± 60.92 | 3990.79 ± 60.92 | 4104.59 ± 60.92 |
-| qwen3:8b |  tg256 |  35.69 ± 0.12 | 36.67 ± 0.47 |                 |                 |                 |
+| qwen3:8b | pp2048 | 449.32 ± 0.79 |              | 4170.76 ± 44.54 | 4059.37 ± 44.54 | 4170.76 ± 44.54 |
+| qwen3:8b |  tg256 |  35.62 ± 0.03 | 37.00 ± 0.00 |                 |                 |                 |
 
 ### Thermal Data
 
 ```mermaid
 xychart-beta
   title "Thermal — pp=2048 tg=256"
-  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 33, 35, 38, 40, 43, 45, 48, 50, 53, 55, 58]
-  y-axis "W" 0 --> 12.7
-  line "CPU W" [1.54, 0.46, 0.69, 0.37, 0.89, 0.29, 0.56, 0.34, 7.7, 0.41, 1.44, 0.18, 0.29, 0.16, 0.57, 0.14, 0.07, 0.18, 0.34, 0.2, 0.22, 0.17, 0.3, 0.16]
+  x-axis "Time (s)" [0, 2, 5, 7, 10, 12, 15, 18, 20, 23, 25, 28, 30, 33, 35, 38, 40, 43]
+  y-axis "W" 0 --> 11.059999999999999
+  line "CPU W" [1.41, 1.42, 0.73, 6.06, 0.43, 1.19, 0.25, 1.25, 0.3, 1.93, 0.2, 2.03, 0.2, 1.04, 0.13, 1.29, 0.17, 1.07]
 ```
 
 <details><summary>Raw readings</summary>
 
 | Time (s) | GPU °C | GPU util % | GPU W | CPU W |
 |---:|---:|---:|---:|---:|
-| 0 | None | None | None | 1.54 |
-| 2 | None | None | None | 0.46 |
-| 5 | None | None | None | 0.69 |
-| 7 | None | None | None | 0.37 |
-| 10 | None | None | None | 0.89 |
-| 12 | None | None | None | 0.29 |
-| 15 | None | None | None | 0.56 |
-| 17 | None | None | None | 0.34 |
-| 20 | None | None | None | 7.7 |
-| 22 | None | None | None | 0.41 |
-| 25 | None | None | None | 1.44 |
-| 27 | None | None | None | 0.18 |
-| 30 | None | None | None | 0.29 |
-| 33 | None | None | None | 0.16 |
-| 35 | None | None | None | 0.57 |
-| 38 | None | None | None | 0.14 |
-| 40 | None | None | None | 0.07 |
-| 43 | None | None | None | 0.18 |
-| 45 | None | None | None | 0.34 |
-| 48 | None | None | None | 0.2 |
-| 50 | None | None | None | 0.22 |
-| 53 | None | None | None | 0.17 |
-| 55 | None | None | None | 0.3 |
-| 58 | None | None | None | 0.16 |
+| 0 | None | None | None | 1.41 |
+| 2 | None | None | None | 1.42 |
+| 5 | None | None | None | 0.73 |
+| 7 | None | None | None | 6.06 |
+| 10 | None | None | None | 0.43 |
+| 12 | None | None | None | 1.19 |
+| 15 | None | None | None | 0.25 |
+| 18 | None | None | None | 1.25 |
+| 20 | None | None | None | 0.3 |
+| 23 | None | None | None | 1.93 |
+| 25 | None | None | None | 0.2 |
+| 28 | None | None | None | 2.03 |
+| 30 | None | None | None | 0.2 |
+| 33 | None | None | None | 1.04 |
+| 35 | None | None | None | 0.13 |
+| 38 | None | None | None | 1.29 |
+| 40 | None | None | None | 0.17 |
+| 43 | None | None | None | 1.07 |
 
 </details>
 

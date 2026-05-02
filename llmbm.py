@@ -298,9 +298,21 @@ def fetch_models(base_url):
     try:
         api = base_url.rstrip('/').removesuffix('/v1')
         data = json.loads(urllib.request.urlopen(f'{api}/api/tags', timeout=5).read())
-        return [m['name'] for m in data.get('models', [])]
+        models = data.get('models', [])
+        global MODEL_SIZES
+        MODEL_SIZES = {m['name']: m.get('size', 0) for m in models}
+        return [m['name'] for m in models]
     except Exception:
         return None
+
+def _fmt_model_size(model_name):
+    b = MODEL_SIZES.get(model_name, 0)
+    if not b:
+        return '?'
+    gb = b / 1_073_741_824
+    return f'{gb:.1f}GB'
+
+MODEL_SIZES = {}
 
 def check_sensors():
     """Return list of INFO strings about unavailable sensors (non-fatal)."""
@@ -1067,7 +1079,7 @@ def write_summary(model, all_results, run_date):
     gpu_peak = max((r['gpu_peak'] for r in all_results if r['gpu_peak']), default=0)
     cpu_peak = max((r['cpu_peak'] for r in all_results if r['cpu_peak']), default=0)
 
-    tg_row = (f'| {model} | ? | {tg_val(512,64)} | {tg_val(512,256)} | '
+    tg_row = (f'| {model} | {_fmt_model_size(model)} | {tg_val(512,64)} | {tg_val(512,256)} | '
               f'{tg_val(2048,64)} | {tg_val(2048,256)} | {MACHINE_LABEL} | {date_str} |')
     pp_row = (f'| {model} | {_fmt(pp_tps)} | {_fmt(ttft, hi=1)} | {MACHINE_LABEL} | {date_str} |')
     th_row = (f'| {model} | {gpu_peak} | {cpu_peak} | {MACHINE_LABEL} | {date_str} | |')

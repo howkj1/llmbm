@@ -10,12 +10,8 @@ Usage:
 Drop any model-benchmark-results-{machine-id}.md file into --input-dir and it
 will be auto-detected.  Machine labels are read from each file's H1 heading:
   # Your Hardware Label — Benchmark Summary
-
-All present files are auto-detected.  If only one file exists the output
-is identical to a single-machine HTML.  With multiple files a machine-tab
-bar appears at the top and a Comparison tab is added.
 """
-import argparse, re, os, sys, glob
+import argparse, re, sys, math
 from html import escape
 from pathlib import Path
 
@@ -36,12 +32,10 @@ DEST     = (Path(_args.output).expanduser().resolve()
 # ── Discover machine files ────────────────────────────────────────────────────
 
 def label_from_file(path):
-    """Extract machine label from H1: '# {label} — * Summary' or '# {label}'."""
     try:
         for line in Path(path).read_text(encoding='utf-8').splitlines():
             if line.startswith('# '):
                 heading = line[2:].strip()
-                # split on em-dash or plain hyphen before any trailing descriptor
                 m = re.match(r'^(.+?)\s+[—–-]{1,3}\s+.*(Summary|Benchmark)', heading)
                 if m:
                     return m.group(1).strip()
@@ -51,13 +45,11 @@ def label_from_file(path):
     return None
 
 def _mid_from_label(label):
-    """Derive a filename-safe machine ID from a label string."""
     s = label.lower()
     s = re.sub(r'[^a-z0-9]+', '-', s).strip('-')
     return s[:40] or 'machine'
 
 def discover_machines():
-    """Return list of (machine_id, label, path) for all present result files."""
     machines = []
     seen_ids = set()
     for p in sorted(BASE_DIR.glob('model-benchmark-results-*.md')):
@@ -65,7 +57,6 @@ def discover_machines():
         label = label_from_file(p) or mid.upper()
         machines.append((mid, label, p))
         seen_ids.add(mid)
-    # bare file (legacy or single-machine) — derive ID from its label
     bare = BASE_DIR / 'model-benchmark-results.md'
     if bare.exists():
         label = label_from_file(bare) or 'Machine'
@@ -91,7 +82,7 @@ NUMERIC_RE = re.compile(r'^\s*~?[\d,.<>±\s]+\s*(GB|ms|t\/s|°C|%|W|s)?\s*$')
 NOWRAP_COLS = {'size', 'date', 'tested from', 'tested', 'duration (s)', 'gpu peak °c',
                'cpu peak °c', 'gpu peak', 'cpu peak', 'pp tok/s', 'ttft (ms)',
                'tg=64 @ pp=512', 'tg=256 @ pp=512', 'tg=64 @ pp=2048', 'tg=256 @ pp=2048',
-               'pp tok/s', 'avg tok/s', 'rank', 't/s', 'peak t/s', 'ttfr (ms)',
+               'avg tok/s', 'rank', 't/s', 'peak t/s', 'ttfr (ms)',
                'est_ppt (ms)', 'e2e_ttft (ms)'}
 
 def render_table(rows):
@@ -119,6 +110,35 @@ def render_table(rows):
     html.append('</tbody></table></div>')
     return '\n'.join(html)
 
+# ── Domain / size helpers ─────────────────────────────────────────────────────
+
+def parse_size_gb(size_str):
+    if not size_str or size_str.strip() in ('?', '—', ''):
+        return None
+    m = re.search(r'([\d.]+)\s*GB', size_str, re.IGNORECASE)
+    return float(m.group(1)) if m else None
+
+_SIZE_BREAKS = [(5, 'XS'), (10, 'S'), (20, 'M'), (40, 'L')]
+
+def size_class(gb):
+    if gb is None: return '?'
+    for limit, label in _SIZE_BREAKS:
+        if gb < limit: return label
+    return 'XL'
+
+def domain_of(model_name):
+    n = model_name.lower()
+    if any(k in n for k in ('coder', 'codestral', 'code-')):
+        return 'coding'
+    if any(k in n for k in ('deepseek-r1', 'qwq', ':r1')):
+        return 'reasoning'
+    return 'general'
+
+_DOMAIN_LABEL = {'coding': '💻 Coding', 'reasoning': '🧠 Reasoning', 'general': '💬 General'}
+
+def _clean_model(name):
+    return re.sub(r'\s*[⚠️✅⚠]\s*', '', name).strip()
+
 # ── Leaderboard data extractors ───────────────────────────────────────────────
 
 def extract_table_after(md_lines, heading_fragment):
@@ -141,15 +161,17 @@ def parse_tg_table(rows):
     for row in rows[2:]:
         cells = [c.strip() for c in row.strip('|').split('|')]
         if len(cells) < 4: continue
-        model = cells[0].strip()
-        size  = cells[1].strip() if len(cells) > 1 else ''
+        model   = cells[0].strip()
+        size    = cells[1].strip() if len(cells) > 1 else ''
+        size_gb = parse_size_gb(size)
         try:
             tg64  = float(re.sub(r'[^\d.]', '', cells[2])) if cells[2].strip() else 0
             tg256 = float(re.sub(r'[^\d.]', '', cells[3])) if cells[3].strip() else 0
         except ValueError:
             continue
         if tg64 == 0 and tg256 == 0: continue
-        results.append({'model': model, 'size': size, 'tg64': tg64, 'tg256': tg256,
+        results.append({'model': model, 'size': size, 'size_gb': size_gb,
+                        'tg64': tg64, 'tg256': tg256,
                         'avg': round((tg64 + tg256) / 2, 1)})
     return sorted(results, key=lambda x: x['avg'], reverse=True)
 
@@ -206,7 +228,7 @@ def make_bar_chart(title, items, unit, lower_is_better=False, color_override=Non
     rows = []
     for i, (label, val) in enumerate(items_s):
         pct   = round(val / max_val * 100, 1)
-        clean = re.sub(r'[⚠️✅]', '', label).strip()
+        clean = re.sub(r'[⚠️✅⚠]', '', label).strip()
         warn  = ' ⚠' if '⚠' in label else ''
         if color_override:
             color = color_override
@@ -225,13 +247,238 @@ def make_bar_chart(title, items, unit, lower_is_better=False, color_override=Non
     return (f'<div class="cbar-wrap"><div class="cbar-title">{escape(title)}</div>'
             + ''.join(rows) + '</div>')
 
-# Machine color palette (hues for distinguishing machines in comparison charts)
 MACHINE_COLORS = ['hsl(210,65%,45%)', 'hsl(30,70%,45%)', 'hsl(270,55%,50%)',
                   'hsl(150,55%,38%)', 'hsl(0,60%,45%)']
 
+def make_grouped_bar_chart(title, by_model, machine_labels, colors,
+                           unit='tok/s', lower_is_better=False):
+    """Grouped bar chart: models as groups, one colored sub-bar per machine."""
+    if not by_model: return ''
+    all_vals = [v for mv in by_model.values() for v in mv.values()
+                if v is not None and v > 0]
+    if not all_vals: return ''
+    max_val = max(all_vals) or 1
+
+    sorted_models = sorted(
+        by_model.keys(),
+        key=lambda m: (max((v for v in by_model[m].values() if v), default=0)),
+        reverse=not lower_is_better
+    )
+
+    groups = []
+    for model in sorted_models:
+        vals  = by_model[model]
+        clean = _clean_model(model)
+        sub   = []
+        for i, mlabel in enumerate(machine_labels):
+            v = vals.get(mlabel)
+            if v is None or v == 0: continue
+            pct   = round(v / max_val * 100, 1)
+            color = colors[i % len(colors)]
+            fmt   = f'{v:,.0f}' if v >= 100 else str(round(v, 1))
+            sub.append(
+                f'<div class="gbar-row">'
+                f'<span class="gbar-mlabel" title="{escape(mlabel)}">{escape(mlabel)}</span>'
+                f'<div class="gbar-track">'
+                f'<div class="gbar-fill" style="width:{pct}%;background:{color}">'
+                f'<span class="gbar-val">{fmt} {unit}</span>'
+                f'</div></div></div>'
+            )
+        if sub:
+            groups.append(
+                f'<div class="gbar-group">'
+                f'<div class="gbar-group-label" title="{escape(clean)}">{escape(clean)}</div>'
+                f'<div class="gbar-bars">{"".join(sub)}</div>'
+                f'</div>'
+            )
+    if not groups: return ''
+    return (f'<div class="gbar-wrap"><div class="gbar-title">{escape(title)}</div>'
+            + ''.join(groups) + '</div>')
+
+# ── Scatter plot (size vs TG speed) ──────────────────────────────────────────
+
+def build_scatter_svg(machines_data):
+    points = []
+    for i, (mid, mlabel, data) in enumerate(machines_data):
+        color = MACHINE_COLORS[i % len(MACHINE_COLORS)]
+        for r in data['tg']:
+            gb = r.get('size_gb')
+            if not gb or r['avg'] <= 0: continue
+            points.append({
+                'model': _clean_model(r['model']), 'machine': mlabel,
+                'x': gb, 'y': r['avg'], 'color': color
+            })
+    if not points:
+        return ''
+
+    W, H   = 680, 340
+    PL, PR, PT, PB = 58, 24, 18, 52
+
+    raw_max_x = max(p['x'] for p in points)
+    raw_max_y = max(p['y'] for p in points)
+    max_x = math.ceil(raw_max_x / 5) * 5 or 10
+    max_y = (math.ceil(raw_max_y / 20) * 20) or 20
+
+    iw = W - PL - PR
+    ih = H - PT - PB
+
+    def sx(v): return PL + iw * v / max_x
+    def sy(v): return PT + ih * (1 - v / max_y)
+
+    lines = [
+        f'<svg width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
+        f'xmlns="http://www.w3.org/2000/svg" class="scatter-svg">'
+    ]
+
+    # Grid
+    x_step = max(1, max_x // 6)
+    y_step = max(10, max_y // 5)
+    for xv in range(0, max_x + 1, x_step):
+        x = sx(xv)
+        lines.append(f'<line x1="{x:.1f}" y1="{PT}" x2="{x:.1f}" y2="{PT+ih}" '
+                     f'stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>')
+        lines.append(f'<text x="{x:.1f}" y="{PT+ih+16}" text-anchor="middle" '
+                     f'font-size="10" fill="var(--text)" opacity="0.7">{xv}GB</text>')
+    for yv in range(0, max_y + 1, y_step):
+        y = sy(yv)
+        lines.append(f'<line x1="{PL}" y1="{y:.1f}" x2="{PL+iw}" y2="{y:.1f}" '
+                     f'stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>')
+        lines.append(f'<text x="{PL-6}" y="{y:.1f}" text-anchor="end" dy="0.35em" '
+                     f'font-size="10" fill="var(--text)" opacity="0.7">{yv}</text>')
+
+    # Axes
+    lines.append(f'<line x1="{PL}" y1="{PT}" x2="{PL}" y2="{PT+ih}" '
+                 f'stroke="var(--text)" stroke-width="1.5" opacity="0.5"/>')
+    lines.append(f'<line x1="{PL}" y1="{PT+ih}" x2="{PL+iw}" y2="{PT+ih}" '
+                 f'stroke="var(--text)" stroke-width="1.5" opacity="0.5"/>')
+
+    # Axis labels
+    cx = PL + iw / 2
+    lines.append(f'<text x="{cx:.1f}" y="{H-4}" text-anchor="middle" '
+                 f'font-size="11" fill="var(--text)" opacity="0.65">Model Size (GB)</text>')
+    cy = PT + ih / 2
+    lines.append(f'<text x="11" y="{cy:.1f}" text-anchor="middle" '
+                 f'transform="rotate(-90,11,{cy:.1f})" '
+                 f'font-size="11" fill="var(--text)" opacity="0.65">TG tok/s (avg)</text>')
+
+    # Points
+    for p in points:
+        x, y = sx(p['x']), sy(p['y'])
+        tip  = escape(f'{p["model"]} @ {p["machine"]}: {p["x"]}GB → {p["y"]} tok/s')
+        lines.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="{p["color"]}" '
+            f'opacity="0.82" stroke="var(--bg)" stroke-width="1.5">'
+            f'<title>{tip}</title></circle>'
+        )
+
+    lines.append('</svg>')
+    return '\n'.join(lines)
+
+# ── All-models supergrid ──────────────────────────────────────────────────────
+
+def build_supergrid(machines_data, all_models_info, grid):
+    machine_list = [(mid, mlabel) for mid, mlabel, _ in machines_data]
+    sorted_models = sorted(
+        all_models_info.keys(),
+        key=lambda m: all_models_info[m]['best_tg'], reverse=True
+    )
+
+    h  = '<h3 id="supergrid">All Models — Full Grid</h3>\n'
+    h += '<p><strong>—</strong> = not tested on this machine. Bold = fastest for that model.</p>\n'
+    h += '<div class="table-wrap"><table class="bench-table supergrid-table"><thead>'
+    h += '<tr><th rowspan="2">Model</th><th rowspan="2">Size</th>'
+    h += '<th rowspan="2" class="nowrap">Class</th>'
+    for mid, mlabel in machine_list:
+        h += f'<th colspan="3" class="sg-machine-header">{escape(mlabel)}</th>'
+    h += '</tr><tr>'
+    for _ in machine_list:
+        h += ('<th class="nowrap sg-metric">TG tok/s</th>'
+              '<th class="nowrap sg-metric">PP tok/s</th>'
+              '<th class="nowrap sg-metric">TTFT ms</th>')
+    h += '</tr></thead><tbody>'
+
+    for model in sorted_models:
+        info = all_models_info[model]
+        dom  = info['domain']
+        sc   = info['sc']
+        # Find best per metric across machines for bolding
+        m_cells = {mid: grid.get(model, {}).get(mid) for mid, _ in machine_list}
+        tg_vals  = {mid: c['tg']   for mid, c in m_cells.items() if c and c.get('tg')}
+        pp_vals  = {mid: c['pp']   for mid, c in m_cells.items() if c and c.get('pp')}
+        ttft_vals= {mid: c['ttft'] for mid, c in m_cells.items() if c and c.get('ttft')}
+        best_tg_mid   = max(tg_vals,   key=tg_vals.get)   if tg_vals   else None
+        best_pp_mid   = max(pp_vals,   key=pp_vals.get)   if pp_vals   else None
+        best_ttft_mid = min(ttft_vals, key=ttft_vals.get) if ttft_vals else None
+
+        h += f'<tr data-domain="{dom}" data-sc="{sc}">'
+        h += f'<td class="model-name">{escape(model)}</td>'
+        h += f'<td class="nowrap">{escape(info["size"])}</td>'
+        sc_cls = sc.lower() if sc != '?' else 'unknown'
+        h += f'<td class="nowrap sc-chip sc-{sc_cls}">{sc}</td>'
+        for mid, mlabel in machine_list:
+            cell = m_cells.get(mid)
+            if not cell:
+                h += '<td class="nowrap sg-dash">—</td><td class="nowrap sg-dash">—</td><td class="nowrap sg-dash">—</td>'
+                continue
+            tg   = cell.get('tg')
+            pp   = cell.get('pp')
+            ttft = cell.get('ttft')
+            tg_s   = (f'<strong>{tg}</strong>'   if mid == best_tg_mid   else str(tg))   if tg   else '—'
+            pp_s   = (f'<strong>{pp:,.0f}</strong>' if mid == best_pp_mid else f'{pp:,.0f}') if pp   else '—'
+            ttft_s = (f'<strong>{ttft:,.0f}</strong>' if mid == best_ttft_mid else f'{ttft:,.0f}') if ttft else '—'
+            h += f'<td class="nowrap">{tg_s}</td><td class="nowrap">{pp_s}</td><td class="nowrap">{ttft_s}</td>'
+        h += '</tr>'
+
+    h += '</tbody></table></div>'
+    return h
+
+# ── Per-model accordion (comparison tab) ─────────────────────────────────────
+
+def build_model_accordion(machines_data, shared_models, all_models_info, grid):
+    if not shared_models:
+        return ''
+    machine_list = [(mid, mlabel) for mid, mlabel, _ in machines_data]
+
+    h  = '<h3 id="model-detail">Per-Model Detail</h3>\n'
+    h += '<p>Click a model to see machine-by-machine breakdown.</p>\n'
+
+    for model in shared_models:
+        info = all_models_info.get(model, {})
+        sc   = info.get('sc', '?')
+        dom  = info.get('domain', 'general')
+        best = info.get('best_tg', 0)
+        dom_label = _DOMAIN_LABEL.get(dom, dom)
+
+        h += '<details class="cmp-accordion-row">\n'
+        h += '<summary class="cmp-acc-summary">'
+        h += f'<span class="model-name">{escape(model)}</span>'
+        h += f'<span class="sc-chip sc-{sc.lower()}">{sc}</span>'
+        h += f'<span class="dom-chip dom-{dom}">{dom_label}</span>'
+        h += f'<span class="acc-best-tg">Best TG: {best} tok/s</span>'
+        h += '</summary>\n'
+        h += '<div class="cmp-acc-body">'
+        h += '<table class="bench-table"><thead><tr>'
+        h += '<th>Machine</th><th class="nowrap">TG tok/s</th>'
+        h += '<th class="nowrap">PP tok/s</th><th class="nowrap">TTFT ms</th>'
+        h += '</tr></thead><tbody>'
+        for mid, mlabel in machine_list:
+            cell = grid.get(model, {}).get(mid)
+            if not cell: continue
+            tg   = str(cell['tg'])   if cell.get('tg')   else '—'
+            pp   = f"{cell['pp']:,.0f}" if cell.get('pp')   else '—'
+            ttft = f"{cell['ttft']:,.0f}" if cell.get('ttft') else '—'
+            h += (f'<tr><td>{escape(mlabel)}</td>'
+                  f'<td class="nowrap">{tg}</td>'
+                  f'<td class="nowrap">{pp}</td>'
+                  f'<td class="nowrap">{ttft}</td></tr>')
+        h += '</tbody></table>'
+        h += '</div></details>\n'
+
+    return h
+
 # ── Per-machine leaderboard ───────────────────────────────────────────────────
 
-def build_leaderboard(md_lines):
+def build_leaderboard(md_lines, mid=''):
     tg_rows      = extract_table_after(md_lines, 'Generation Throughput')
     pp_rows      = extract_table_after(md_lines, 'Prompt Processing Throughput')
     thermal_rows = extract_table_after(md_lines, 'Thermal Profile')
@@ -241,14 +488,31 @@ def build_leaderboard(md_lines):
     ttft_data    = sorted(parse_pp_table(pp_rows), key=lambda x: x['ttft'])
     thermal_data = parse_thermal_table(thermal_rows)
 
-    def lb_table(title, anchor, headers, rows_fn, data, chart_html=''):
-        h = f'<section id="{anchor}" class="leaderboard-block">\n<h3>{title}</h3>\n'
+    eff_data = sorted(
+        [{'model': r['model'], 'size': r['size'], 'size_gb': r['size_gb'],
+          'avg': r['avg'], 'eff': round(r['avg'] / r['size_gb'], 2)}
+         for r in tg_data if r['size_gb'] and r['size_gb'] > 0],
+        key=lambda x: x['eff'], reverse=True
+    )
+
+    p = (mid + '-') if mid else ''
+
+    def lb_section(anchor, title, headers, rows_fn, data, chart_html='', extra=''):
+        tid = f'{p}{anchor}-tbl'
+        h  = f'<section id="{anchor}" class="leaderboard-block">\n<h3>{title}</h3>\n'
+        if extra: h += extra
         h += '<div class="lb-row">'
-        h += '<div class="table-wrap"><table class="bench-table leaderboard-table"><thead><tr>'
+        h += (f'<div class="table-wrap"><table id="{tid}" '
+              f'class="bench-table leaderboard-table sortable"><thead><tr>')
         h += ''.join(f'<th>{c}</th>' for c in headers)
         h += '</tr></thead><tbody>\n'
         for i, row in enumerate(data):
-            h += f'<tr>{rows_fn(i, row)}</tr>\n'
+            result = rows_fn(i, row)
+            if isinstance(result, tuple):
+                attrs, cells = result
+                h += f'<tr {attrs}>{cells}</tr>\n'
+            else:
+                h += f'<tr>{result}</tr>\n'
         h += '</tbody></table></div>'
         if chart_html:
             h += f'<div class="lb-chart">{chart_html}</div>'
@@ -256,27 +520,53 @@ def build_leaderboard(md_lines):
         return h
 
     def tg_row(i, r):
+        sc   = size_class(r['size_gb'])
+        dom  = domain_of(r['model'])
         warn = ' ⚠' if '⚠' in r['model'] else ''
-        return (f'<td class="nowrap">{medal(i)}</td>'
-                f'<td class="model-name">{escape(r["model"])}{warn}</td>'
-                f'<td class="nowrap">{escape(r["size"])}</td>'
-                f'<td class="nowrap">{r["tg64"]}</td>'
-                f'<td class="nowrap">{r["tg256"]}</td>'
-                f'<td class="nowrap"><strong>{r["avg"]}</strong></td>')
+        return (
+            f'data-sc="{sc}" data-domain="{dom}"',
+            f'<td class="nowrap" data-val="{i}">{medal(i)}</td>'
+            f'<td class="model-name">{escape(r["model"])}{warn}</td>'
+            f'<td class="nowrap" data-val="{r["size_gb"] or 0}">{escape(r["size"])}</td>'
+            f'<td class="nowrap"><span class="sc-chip sc-{sc.lower() if sc != "?" else "unknown"}">{sc}</span></td>'
+            f'<td class="nowrap" data-val="{r["tg64"]}">{r["tg64"]}</td>'
+            f'<td class="nowrap" data-val="{r["tg256"]}">{r["tg256"]}</td>'
+            f'<td class="nowrap" data-val="{r["avg"]}"><strong>{r["avg"]}</strong></td>'
+        )
 
     def pp_row(i, r):
+        dom  = domain_of(r['model'])
         warn = ' ⚠' if '⚠' in r['model'] else ''
-        return (f'<td class="nowrap">{medal(i)}</td>'
-                f'<td class="model-name">{escape(r["model"])}{warn}</td>'
-                f'<td class="nowrap"><strong>{r["pp"]:,.0f}</strong></td>'
-                f'<td class="nowrap">{r["ttft"]:,.0f}</td>')
+        return (
+            f'data-domain="{dom}"',
+            f'<td class="nowrap" data-val="{i}">{medal(i)}</td>'
+            f'<td class="model-name">{escape(r["model"])}{warn}</td>'
+            f'<td class="nowrap" data-val="{r["pp"]}"><strong>{r["pp"]:,.0f}</strong></td>'
+            f'<td class="nowrap" data-val="{r["ttft"]}">{r["ttft"]:,.0f}</td>'
+        )
 
     def ttft_row(i, r):
+        dom  = domain_of(r['model'])
         warn = ' ⚠' if '⚠' in r['model'] else ''
-        return (f'<td class="nowrap">{medal(i)}</td>'
-                f'<td class="model-name">{escape(r["model"])}{warn}</td>'
-                f'<td class="nowrap"><strong>{r["ttft"]:,.0f}</strong></td>'
-                f'<td class="nowrap">{r["pp"]:,.0f}</td>')
+        return (
+            f'data-domain="{dom}"',
+            f'<td class="nowrap" data-val="{i}">{medal(i)}</td>'
+            f'<td class="model-name">{escape(r["model"])}{warn}</td>'
+            f'<td class="nowrap" data-val="{r["ttft"]}"><strong>{r["ttft"]:,.0f}</strong></td>'
+            f'<td class="nowrap" data-val="{r["pp"]}">{r["pp"]:,.0f}</td>'
+        )
+
+    def eff_row(i, r):
+        sc  = size_class(r['size_gb'])
+        dom = domain_of(r['model'])
+        return (
+            f'data-sc="{sc}" data-domain="{dom}"',
+            f'<td class="nowrap" data-val="{i}">{medal(i)}</td>'
+            f'<td class="model-name">{escape(r["model"])}</td>'
+            f'<td class="nowrap" data-val="{r["size_gb"]}">{escape(r["size"])}</td>'
+            f'<td class="nowrap" data-val="{r["avg"]}">{r["avg"]}</td>'
+            f'<td class="nowrap" data-val="{r["eff"]}"><strong>{r["eff"]}</strong></td>'
+        )
 
     tg_chart   = make_bar_chart('TG Speed (avg tok/s)',
                                 [(r['model'], r['avg']) for r in tg_data], 'tok/s')
@@ -285,14 +575,46 @@ def build_leaderboard(md_lines):
     ttft_chart = make_bar_chart('TTFT (ms, lower = faster)',
                                 [(r['model'], r['ttft']) for r in ttft_data],
                                 'ms', lower_is_better=True)
+    eff_chart  = make_bar_chart('Efficiency (tok/s per GB)',
+                                [(r['model'], r['eff']) for r in eff_data], 'tok/s/GB')
 
-    out  = '<section id="leaderboard">\n<h2>Leaderboard</h2>\n'
-    out += lb_table('⚡ TG Speed (tok/s)', 'lb-tg',
-                    ['Rank','Model','Size','tg=64','tg=256','Avg'], tg_row, tg_data, tg_chart)
-    out += lb_table('🚀 PP Speed (tok/s @ pp=512)', 'lb-pp',
-                    ['Rank','Model','PP tok/s','TTFT (ms)'], pp_row, pp_data, pp_chart)
-    out += lb_table('⏱ TTFT — fastest first (ms)', 'lb-ttft',
-                    ['Rank','Model','TTFT (ms)','PP tok/s'], ttft_row, ttft_data, ttft_chart)
+    # Domain filter pills (applied to all leaderboard tables in pane via JS)
+    all_domains = sorted(set(domain_of(r['model']) for r in tg_data))
+    if len(all_domains) > 1:
+        dom_btns = '<button class="lb-domain-btn active" data-domain="all">All</button>'
+        for d in all_domains:
+            dom_btns += (f'<button class="lb-domain-btn" data-domain="{d}">'
+                         f'{_DOMAIN_LABEL.get(d, d)}</button>')
+        dom_filter = f'<div class="filter-pills lb-domain-filter">{dom_btns}</div>'
+    else:
+        dom_filter = ''
+
+    # Size-class filter pills for TG section
+    present_sc = [sc for sc in ['XS', 'S', 'M', 'L', 'XL', '?']
+                  if any(size_class(r['size_gb']) == sc for r in tg_data)]
+    if len(present_sc) > 1:
+        sc_btns = f'<button class="sc-filter-btn active" data-sc="all" data-mid="{mid}">All</button>'
+        for sc in present_sc:
+            sc_btns += f'<button class="sc-filter-btn" data-sc="{sc}" data-mid="{mid}">{sc}</button>'
+        sc_filter = f'<div class="filter-pills sc-filter">{sc_btns}</div>'
+    else:
+        sc_filter = ''
+
+    out  = f'<section id="leaderboard">\n<h2>Leaderboard</h2>\n'
+    out += dom_filter
+    out += lb_section('lb-tg', '⚡ TG Speed (tok/s)',
+                      ['Rank','Model','Size','Class','tg=64','tg=256','Avg'],
+                      tg_row, tg_data, tg_chart, extra=sc_filter)
+    out += lb_section('lb-pp', '🚀 PP Speed (tok/s @ pp=512)',
+                      ['Rank','Model','PP tok/s','TTFT (ms)'],
+                      pp_row, pp_data, pp_chart)
+    out += lb_section('lb-ttft', '⏱ TTFT — fastest first (ms)',
+                      ['Rank','Model','TTFT (ms)','PP tok/s'],
+                      ttft_row, ttft_data, ttft_chart)
+    if eff_data:
+        out += lb_section('lb-eff', '📐 Efficiency (tok/s per GB)',
+                          ['Rank','Model','Size','TG avg','tok/s per GB'],
+                          eff_row, eff_data, eff_chart)
     out += '</section>\n'
 
     cross_charts = {
@@ -314,112 +636,96 @@ def build_leaderboard(md_lines):
 # ── Cross-machine comparison ──────────────────────────────────────────────────
 
 def build_comparison(machines_data):
-    """
-    machines_data: list of (machine_id, label, data_dict)
-    data_dict has keys: tg, pp, thermal
-
-    Comparison shows:
-    - TG avg tok/s: for each model present in ≥2 machines, bar entries labeled "model @ machine"
-    - PP tok/s: same
-    - A summary table: rows=models, columns=machine metrics
-    """
     if len(machines_data) < 2:
         return ''
 
-    # Build model→machine→values maps
-    tg_by_model  = {}   # model → {machine_label: avg}
-    pp_by_model  = {}   # model → {machine_label: pp}
+    tg_by_model   = {}
+    pp_by_model   = {}
+    ttft_by_model = {}
+    all_models_info = {}
+    grid = {}
 
-    for mid, mlabel, data in machines_data:
+    for i, (mid, mlabel, data) in enumerate(machines_data):
         for r in data['tg']:
-            key = re.sub(r'\s*⚠️?\s*', '', r['model']).strip()
+            key = _clean_model(r['model'])
             tg_by_model.setdefault(key, {})[mlabel] = r['avg']
-        for r in data['pp']:
-            key = re.sub(r'\s*⚠️?\s*', '', r['model']).strip()
-            pp_by_model.setdefault(key, {})[mlabel] = r['pp']
+            if key not in all_models_info:
+                all_models_info[key] = {
+                    'size': r['size'], 'size_gb': r['size_gb'],
+                    'sc': size_class(r['size_gb']),
+                    'domain': domain_of(key), 'best_tg': 0,
+                }
+            all_models_info[key]['best_tg'] = max(
+                all_models_info[key]['best_tg'], r['avg'])
+            grid.setdefault(key, {}).setdefault(mid, {})['tg'] = r['avg']
+            # preserve size on grid entry
+            grid[key][mid]['size']    = r['size']
+            grid[key][mid]['size_gb'] = r['size_gb']
 
-    shared_tg = {m: v for m, v in tg_by_model.items() if len(v) >= 2}
-    shared_pp = {m: v for m, v in pp_by_model.items() if len(v) >= 2}
+        for r in data['pp']:
+            key = _clean_model(r['model'])
+            if r['pp'] > 0:
+                pp_by_model.setdefault(key, {})[mlabel] = r['pp']
+            if r['ttft'] > 0:
+                ttft_by_model.setdefault(key, {})[mlabel] = r['ttft']
+            grid.setdefault(key, {}).setdefault(mid, {})
+            grid[key][mid]['pp']   = r['pp']   if r['pp']   > 0 else None
+            grid[key][mid]['ttft'] = r['ttft'] if r['ttft'] > 0 else None
 
     machine_labels = [mlabel for _, mlabel, _ in machines_data]
+    colors         = MACHINE_COLORS
 
-    # Comparison table: rows=models, columns per machine
-    def cmp_table(title, by_model, unit):
-        if not by_model: return ''
-        # Sort models by best single-machine value descending
-        sorted_models = sorted(by_model.keys(),
-                               key=lambda m: max(by_model[m].values()), reverse=True)
-        h = f'<h4>{title}</h4>'
-        h += '<div class="table-wrap"><table class="bench-table"><thead><tr>'
-        h += '<th>Model</th>'
-        for ml in machine_labels:
-            h += f'<th class="nowrap">{escape(ml)}</th>'
-        h += '<th class="nowrap">Best</th>'
-        h += '</tr></thead><tbody>\n'
-        for model in sorted_models:
-            vals = by_model[model]
-            best_ml = max(vals, key=lambda k: vals[k])
-            h += '<tr>'
-            h += f'<td class="model-name">{escape(model)}</td>'
-            for ml in machine_labels:
-                v = vals.get(ml)
-                cell = f'<strong>{v:,.1f}</strong>' if ml == best_ml and len(vals) > 1 else (
-                       f'{v:,.1f}' if v is not None else '—')
-                h += f'<td class="nowrap">{cell}</td>'
-            h += f'<td class="nowrap">{escape(best_ml)}</td>'
-            h += '</tr>\n'
-        h += '</tbody></table></div>'
-        return h
-
-    # Interleaved bar chart: "model @ machine" entries, colored by machine
-    def interleaved_chart(title, by_model, unit, lower_is_better=False):
-        if not by_model: return ''
-        items = []
-        for model in sorted(by_model.keys(),
-                             key=lambda m: max(by_model[m].values()), reverse=not lower_is_better):
-            for i, (mid, mlabel, _) in enumerate(machines_data):
-                v = by_model[model].get(mlabel)
-                if v is not None:
-                    color = MACHINE_COLORS[i % len(MACHINE_COLORS)]
-                    items.append((f'{model} @ {mlabel}', v, color))
-        if not items: return ''
-        items_s = sorted(items, key=lambda x: x[1], reverse=not lower_is_better)
-        max_val = max(v for _, v, _ in items_s) or 1
-        rows = []
-        for label, val, color in items_s:
-            pct  = round(val / max_val * 100, 1)
-            fmt  = f'{val:,.0f}' if val >= 100 else str(round(val, 1))
-            rows.append(
-                f'<div class="cbar-row">'
-                f'<span class="cbar-label" title="{escape(label)}">{escape(label)}</span>'
-                f'<div class="cbar-track">'
-                f'<div class="cbar-fill" style="width:{pct}%;background:{color}">'
-                f'<span class="cbar-val">{fmt} {unit}</span>'
-                f'</div></div></div>'
-            )
-        return (f'<div class="cbar-wrap"><div class="cbar-title">{escape(title)}</div>'
-                + ''.join(rows) + '</div>')
+    shared_tg   = {m: v for m, v in tg_by_model.items()   if len(v) >= 2}
+    shared_pp   = {m: v for m, v in pp_by_model.items()   if len(v) >= 2}
+    shared_ttft = {m: v for m, v in ttft_by_model.items() if len(v) >= 2}
+    shared_models = sorted(
+        set(shared_tg) | set(shared_pp),
+        key=lambda m: all_models_info.get(m, {}).get('best_tg', 0), reverse=True
+    )
 
     # Machine color legend
     legend = '<div class="machine-legend">'
     for i, (mid, mlabel, _) in enumerate(machines_data):
-        color = MACHINE_COLORS[i % len(MACHINE_COLORS)]
+        color = colors[i % len(colors)]
         legend += (f'<span class="legend-dot" style="background:{color}"></span>'
                    f'<span class="legend-label">{escape(mlabel)}</span>')
     legend += '</div>'
 
-    out = '<section id="comparison">\n'
+    out  = '<section id="comparison">\n'
     out += '<h2>⚖ Cross-Machine Comparison</h2>\n'
-    out += '<p>Models tested on 2+ machines. <strong>Bold</strong> = fastest for that model.</p>\n'
     out += legend
 
-    if shared_tg:
-        out += cmp_table('TG Speed (avg tok/s @ pp=512)', shared_tg, 'tok/s')
-        out += interleaved_chart('TG Speed by model & machine', shared_tg, 'tok/s')
+    # 1. All-models supergrid
+    out += build_supergrid(machines_data, all_models_info, grid)
 
-    if shared_pp:
-        out += cmp_table('PP Speed (tok/s @ pp=512)', shared_pp, 'tok/s')
-        out += interleaved_chart('PP Speed by model & machine', shared_pp, 'tok/s')
+    # 2. Grouped bar charts (models on 2+ machines)
+    if shared_tg or shared_pp or shared_ttft:
+        out += '<h3 id="cross-charts">Cross-Machine Charts</h3>\n'
+        out += '<p><strong>Bold</strong> = fastest for that model across machines.</p>\n'
+        charts_html = ''
+        if shared_tg:
+            charts_html += make_grouped_bar_chart(
+                'TG Speed (avg tok/s)', shared_tg, machine_labels, colors, 'tok/s')
+        if shared_pp:
+            charts_html += make_grouped_bar_chart(
+                'PP Speed (tok/s @ pp=512)', shared_pp, machine_labels, colors, 'tok/s')
+        if shared_ttft:
+            charts_html += make_grouped_bar_chart(
+                'TTFT (ms — lower is faster)', shared_ttft, machine_labels, colors,
+                'ms', lower_is_better=True)
+        out += f'<div class="gbar-grid">{charts_html}</div>'
+
+    # 3. Scatter plot
+    scatter = build_scatter_svg(machines_data)
+    if scatter:
+        out += '<h3 id="scatter">Size vs Speed</h3>\n'
+        out += '<p>Model size (GB) vs. avg TG speed. Hover a dot for details. Only models with known size shown.</p>\n'
+        out += scatter
+
+    # 4. Per-model accordion
+    acc = build_model_accordion(machines_data, shared_models, all_models_info, grid)
+    if acc:
+        out += acc
 
     if not shared_tg and not shared_pp:
         out += '<p><em>No models tested on multiple machines yet.</em></p>\n'
@@ -434,18 +740,18 @@ def parse_markdown(md_text, cross_charts=None):
     out   = []
     model_sections = []
 
-    in_front_matter  = False
+    in_front_matter   = False
     front_matter_done = False
-    in_mermaid       = False
-    mermaid_buf      = []
-    in_code          = False
-    code_buf         = []
-    code_lang        = ''
-    in_list          = False
-    table_buf        = []
-    in_model_section = False
-    first_model      = True
-    pending_chart    = None
+    in_mermaid        = False
+    mermaid_buf       = []
+    in_code           = False
+    code_buf          = []
+    code_lang         = ''
+    in_list           = False
+    table_buf         = []
+    in_model_section  = False
+    first_model       = True
+    pending_chart     = None
 
     def flush_list():
         nonlocal in_list
@@ -552,11 +858,12 @@ def parse_markdown(md_text, cross_charts=None):
                     out.append('</details></section>')
                 model_name = title.replace('Benchmark Report:', '').strip()
                 model_id   = 'model-' + slugify(model_name)
-                model_sections.append({'id': model_id, 'title': model_name})
+                dom        = domain_of(model_name)
+                model_sections.append({'id': model_id, 'title': model_name, 'domain': dom})
                 open_attr = ' open' if first_model else ''
                 first_model = False
                 in_model_section = True
-                out.append(f'<section id="{model_id}" class="model-section">')
+                out.append(f'<section id="{model_id}" class="model-section" data-domain="{dom}">')
                 out.append(f'<details{open_attr}>'
                            f'<summary class="model-header"><h2>{escape(title)}</h2></summary>')
                 continue
@@ -599,10 +906,23 @@ def parse_markdown(md_text, cross_charts=None):
 
     return '\n'.join(out), model_sections
 
+# ── Domain filter pills for model sections ────────────────────────────────────
+
+def build_model_domain_pills(mid, model_sections):
+    domains = sorted(set(m['domain'] for m in model_sections))
+    if len(domains) <= 1:
+        return ''
+    h = '<div class="filter-pills model-domain-filter">'
+    h += f'<button class="model-domain-btn active" data-mid="{mid}" data-domain="all">All Models</button>'
+    for d in domains:
+        h += (f'<button class="model-domain-btn" data-mid="{mid}" data-domain="{d}">'
+              f'{_DOMAIN_LABEL.get(d, d)}</button>')
+    h += '</div>'
+    return h
+
 # ── Navigation ────────────────────────────────────────────────────────────────
 
 def build_nav(machines_with_sections, has_comparison):
-    """machines_with_sections: list of (machine_id, label, model_sections)"""
     parts = []
     parts.append('''
 <div class="theme-wrap">
@@ -628,20 +948,24 @@ def build_nav(machines_with_sections, has_comparison):
     parts.append('<div class="nav-section">Pages</div>')
     parts.append('<a class="nav-link nav-tablink" data-tab-link href="#leaderboard" data-section="leaderboard">Leaderboard</a>')
     parts.append('<div class="nav-section">Tables</div>')
-    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-tg" data-section="lb-tg">TG Speed</a>')
-    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-pp" data-section="lb-pp">PP Speed</a>')
-    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-ttft" data-section="lb-ttft">TTFT</a>')
+    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-tg" data-section="lb-tg">⚡ TG Speed</a>')
+    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-pp" data-section="lb-pp">🚀 PP Speed</a>')
+    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-ttft" data-section="lb-ttft">⏱ TTFT</a>')
+    parts.append('<a class="nav-link nav-sub nav-tablink" data-tab-link href="#lb-eff" data-section="lb-eff">📐 Efficiency</a>')
     if has_comparison:
         parts.append('<a class="nav-link nav-sub" href="#" data-tab="compare" data-section="comparison">⚖ Cross-Machine</a>')
+        parts.append('<a class="nav-link nav-sub nav-cmp" href="#" data-tab="compare" data-section="supergrid"> ↳ All-Models Grid</a>')
+        parts.append('<a class="nav-link nav-sub nav-cmp" href="#" data-tab="compare" data-section="scatter"> ↳ Size vs Speed</a>')
 
     for mid, mlabel, model_sections in machines_with_sections:
         parts.append(f'<div class="nav-section nav-models-{mid}">Models — {escape(mlabel)}</div>')
         for m in model_sections:
             label = escape(m['title'])
             warn  = ' <span class="warn-badge">⚠</span>' if '⚠' in m['title'] else ''
+            dom   = m.get('domain', 'general')
             parts.append(
-                f'<a class="nav-link nav-sub nav-models-{mid}" href="#{m["id"]}" '
-                f'data-section="{m["id"]}">{label}{warn}</a>'
+                f'<a class="nav-link nav-sub nav-models-{mid} nav-model-{dom}" '
+                f'href="#{m["id"]}" data-section="{m["id"]}">{label}{warn}</a>'
             )
 
     return '\n'.join(parts)
@@ -676,7 +1000,6 @@ html, body { margin:0; padding:0; background:var(--bg); color:var(--text);
              font-family:system-ui,-apple-system,sans-serif; font-size:15px;
              line-height:1.6; }
 a { color:var(--link); }
-
 body { display:flex; min-height:100vh; }
 
 /* ── Sidebar ── */
@@ -694,6 +1017,7 @@ body { display:flex; min-height:100vh; }
 .nav-sub.active { padding-left:25px; }
 .nav-machine { font-weight:600; font-size:0.82em; }
 .nav-machine.active { color:var(--tab-active); }
+.nav-cmp { font-size:0.78em; opacity:.8; }
 .warn-badge { font-size:.8em; }
 
 /* ── Theme switcher ── */
@@ -723,7 +1047,7 @@ body { display:flex; min-height:100vh; }
                                   border-color:var(--tab-active); font-weight:700; }
 
 /* ── Main content ── */
-#content { flex:1; padding:2rem 2.5rem; max-width:1200px; overflow-x:hidden; }
+#content { flex:1; padding:2rem 2.5rem; max-width:1300px; overflow-x:hidden; }
 #content section { margin-bottom:2.5rem; }
 .tab-pane { display:none; }
 .tab-pane.active { display:block; }
@@ -750,6 +1074,38 @@ blockquote { border-left:4px solid var(--border); margin:1em 0; padding:.5em 1em
 td.nowrap, th.nowrap { white-space:nowrap; }
 td.model-name { font-family:monospace; font-size:.85em; white-space:nowrap; }
 .leaderboard-table td:first-child { text-align:center; font-size:1.1em; }
+
+/* ── Sortable tables ── */
+.bench-table.sortable th { cursor:pointer; user-select:none; }
+.bench-table.sortable th:hover { color:var(--accent); }
+.sort-arrow { margin-left:4px; font-size:.75em; opacity:.8; }
+
+/* ── Filter pills ── */
+.filter-pills { display:flex; gap:5px; flex-wrap:wrap; margin:.6rem 0; }
+.filter-pills button { padding:3px 11px; border:1px solid var(--border);
+                       background:var(--th-bg); color:var(--text); cursor:pointer;
+                       border-radius:12px; font-size:.78em; white-space:nowrap;
+                       transition:background .12s, color .12s; }
+.filter-pills button:hover { border-color:var(--accent); color:var(--accent); }
+.filter-pills button.active { background:var(--tab-active); color:var(--tab-active-text);
+                               border-color:var(--tab-active); font-weight:600; }
+
+/* ── Size-class chips ── */
+.sc-chip { display:inline-block; padding:1px 6px; border-radius:9px; font-size:.72em;
+           font-weight:700; border:1px solid var(--border); white-space:nowrap; }
+.sc-xs { background:rgba(39,174,96,.15); }
+.sc-s  { background:rgba(52,152,219,.15); }
+.sc-m  { background:rgba(243,156,18,.15); }
+.sc-l  { background:rgba(231,76,60,.15); }
+.sc-xl { background:rgba(142,68,173,.15); }
+.sc-unknown { opacity:.5; }
+
+/* ── Domain chips ── */
+.dom-chip { display:inline-block; padding:1px 7px; border-radius:9px; font-size:.72em;
+            border:1px solid var(--border); white-space:nowrap; }
+.dom-coding    { background:rgba(52,152,219,.14); }
+.dom-reasoning { background:rgba(155,89,182,.14); }
+.dom-general   { background:rgba(39,174,96,.12); }
 
 /* ── Mermaid charts ── */
 .mermaid { margin:1rem 0; }
@@ -786,8 +1142,7 @@ td.model-name { font-family:monospace; font-size:.85em; white-space:nowrap; }
               text-transform:uppercase; letter-spacing:.04em; }
 .cbar-row { display:flex; align-items:center; margin:3px 0; gap:8px; font-size:.8em; }
 .cbar-label { width:200px; text-align:right; font-family:monospace; flex-shrink:0;
-              white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-              opacity:.85; }
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:.85; }
 .cbar-track { flex:1; background:var(--row-alt); border-radius:3px; height:20px;
               border:1px solid var(--border); overflow:hidden; }
 .cbar-fill { height:100%; border-radius:2px; display:flex; align-items:center;
@@ -795,11 +1150,52 @@ td.model-name { font-family:monospace; font-size:.85em; white-space:nowrap; }
 .cbar-val { color:#fff; font-size:.75em; font-weight:600; white-space:nowrap;
             text-shadow:0 1px 2px rgba(0,0,0,.45); }
 
+/* ── Grouped bar charts ── */
+.gbar-grid { display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-start; }
+.gbar-wrap { flex:1; min-width:260px; margin:.5rem 0 1.5rem; }
+.gbar-title { font-size:.8em; font-weight:600; opacity:.65; margin-bottom:.8em;
+              text-transform:uppercase; letter-spacing:.04em; }
+.gbar-group { margin-bottom:.9rem; }
+.gbar-group-label { font-size:.8em; font-family:monospace; font-weight:600; opacity:.9;
+                    margin-bottom:3px; white-space:nowrap; overflow:hidden;
+                    text-overflow:ellipsis; padding-left:2px; }
+.gbar-bars { padding-left:8px; border-left:2px solid var(--border); }
+.gbar-row { display:flex; align-items:center; margin:2px 0; gap:6px; font-size:.77em; }
+.gbar-mlabel { width:130px; text-align:right; flex-shrink:0; white-space:nowrap;
+               overflow:hidden; text-overflow:ellipsis; opacity:.7; }
+.gbar-track { flex:1; background:var(--row-alt); border-radius:3px; height:17px;
+              border:1px solid var(--border); overflow:hidden; }
+.gbar-fill { height:100%; border-radius:2px; display:flex; align-items:center;
+             padding:0 5px; min-width:3px; }
+.gbar-val { color:#fff; font-size:.73em; font-weight:600; white-space:nowrap;
+            text-shadow:0 1px 2px rgba(0,0,0,.5); }
+
+/* ── Supergrid ── */
+.supergrid-table th { text-align:center; }
+.sg-machine-header { background:var(--th-bg); font-weight:700; }
+.sg-metric { font-weight:500; font-size:.82em; opacity:.8; }
+.sg-dash { opacity:.3; text-align:center; }
+
+/* ── Scatter plot ── */
+.scatter-svg { display:block; max-width:100%; height:auto; overflow:visible; margin:1rem 0; }
+
 /* ── Machine legend ── */
 .machine-legend { display:flex; gap:1.2rem; flex-wrap:wrap; margin:1rem 0; font-size:.85em; }
 .legend-dot { display:inline-block; width:12px; height:12px; border-radius:50%;
               margin-right:4px; vertical-align:middle; }
 .legend-label { vertical-align:middle; }
+
+/* ── Comparison accordion ── */
+.cmp-accordion-row { border:1px solid var(--border); border-radius:5px;
+                     margin-bottom:.5rem; overflow:hidden; }
+.cmp-acc-summary { list-style:none; cursor:pointer; padding:.55em 1em;
+                   background:var(--summary-bg); display:flex; align-items:center;
+                   gap:.6em; flex-wrap:wrap; }
+.cmp-acc-summary::-webkit-details-marker { display:none; }
+.cmp-acc-summary::before { content:"▶ "; font-size:.78em; opacity:.55; flex-shrink:0; }
+details[open] .cmp-acc-summary::before { content:"▼ "; }
+.acc-best-tg { font-size:.78em; opacity:.65; margin-left:auto; }
+.cmp-acc-body { padding:.7rem 1rem; }
 
 /* ── Expand controls ── */
 .expand-controls { margin:1rem 0; display:flex; gap:.5rem; }
@@ -884,13 +1280,11 @@ function switchTab(tabId) {
   document.querySelectorAll('.nav-machine').forEach(a => {
     a.classList.toggle('active', a.dataset.tab === tabId);
   });
-  // Show/hide machine-specific nav sections
   MACHINE_IDS.forEach(mid => {
     document.querySelectorAll('.nav-models-' + mid).forEach(el => {
       el.style.display = (tabId === mid || !HAS_MULTI) ? '' : 'none';
     });
   });
-  // Trigger mermaid render for newly visible open details
   document.querySelectorAll('#tab-' + tabId + ' .model-section details[open] .mermaid').forEach(el => {
     if (!el.getAttribute('data-processed')) {
       el.innerHTML = el.getAttribute('data-src') || el.innerHTML;
@@ -911,7 +1305,100 @@ if (HAS_MULTI) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('active'));
 }
 
-// Scrollspy
+// ── Sortable leaderboard tables ───────────────────────────────────────────────
+document.querySelectorAll('.bench-table.sortable').forEach(table => {
+  const ths = [...table.querySelectorAll('thead th')];
+  ths.forEach((th, col) => {
+    th.addEventListener('click', () => {
+      const tbody = table.querySelector('tbody');
+      if (!tbody) return;
+      const asc = th.dataset.sortDir !== 'asc';
+      ths.forEach(t => {
+        delete t.dataset.sortDir;
+        t.querySelectorAll('.sort-arrow').forEach(a => a.remove());
+      });
+      th.dataset.sortDir = asc ? 'asc' : 'desc';
+      th.insertAdjacentHTML('beforeend',
+        `<span class="sort-arrow">${asc ? '↑' : '↓'}</span>`);
+      const rows = [...tbody.querySelectorAll('tr')];
+      rows.sort((a, b) => {
+        const ac = a.children[col], bc = b.children[col];
+        const av = (ac?.dataset.val ?? ac?.textContent ?? '').replace(/,/g,'');
+        const bv = (bc?.dataset.val ?? bc?.textContent ?? '').replace(/,/g,'');
+        const an = parseFloat(av), bn = parseFloat(bv);
+        if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+        return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+});
+
+// ── Domain filter for leaderboard tables (per tab pane) ───────────────────────
+document.querySelectorAll('.lb-domain-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const pane = btn.closest('.tab-pane');
+    const domain = btn.dataset.domain;
+    if (pane) {
+      pane.querySelectorAll('.lb-domain-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      pane.querySelectorAll('.leaderboard-table tbody tr').forEach(row => {
+        row.style.display =
+          (domain === 'all' || row.dataset.domain === domain) ? '' : 'none';
+      });
+      // also filter nav model links in sidebar
+      const mid = pane.id.replace('tab-', '');
+      document.querySelectorAll('.nav-models-' + mid + ' a, .nav-model-general, .nav-model-coding, .nav-model-reasoning').forEach(a => {
+        if (!a.classList.contains('nav-models-' + mid)) return;
+        a.style.display = (domain === 'all' || a.classList.contains('nav-model-' + domain)) ? '' : 'none';
+      });
+    }
+  });
+});
+
+// ── Size-class filter for TG leaderboard ─────────────────────────────────────
+document.querySelectorAll('.sc-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const pane   = btn.closest('.tab-pane');
+    const sc     = btn.dataset.sc;
+    const mid    = btn.dataset.mid;
+    const filter = btn.closest('.sc-filter');
+    if (filter) {
+      filter.querySelectorAll('.sc-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    if (pane) {
+      const tgTable = pane.querySelector('#' + mid + '-lb-tg-tbl');
+      if (tgTable) {
+        tgTable.querySelectorAll('tbody tr').forEach(row => {
+          row.style.display = (sc === 'all' || row.dataset.sc === sc) ? '' : 'none';
+        });
+      }
+    }
+  });
+});
+
+// ── Domain filter for model sections ─────────────────────────────────────────
+document.querySelectorAll('.model-domain-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mid    = btn.dataset.mid;
+    const domain = btn.dataset.domain;
+    const filter = btn.closest('.model-domain-filter');
+    if (filter) {
+      filter.querySelectorAll('.model-domain-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    const pane = document.getElementById('tab-' + mid);
+    if (pane) {
+      pane.querySelectorAll('.model-section').forEach(sec => {
+        sec.style.display =
+          (domain === 'all' || sec.dataset.domain === domain) ? '' : 'none';
+      });
+    }
+  });
+});
+
+// ── Scrollspy ─────────────────────────────────────────────────────────────────
 const navLinks = document.querySelectorAll('.nav-link[data-section]');
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -921,7 +1408,7 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: 0.05, rootMargin: '0px 0px -60% 0px' });
 document.querySelectorAll('section[id], .leaderboard-block[id]').forEach(s => io.observe(s));
 
-// Init
+// ── Init ──────────────────────────────────────────────────────────────────────
 applyTheme(currentTheme);
 '''
 
@@ -961,23 +1448,22 @@ def main():
 
     print(f'Found {len(machines)} machine file(s): {[m[0] for m in machines]}')
 
-    machines_data   = []   # (mid, mlabel, data_dict)
-    machines_html   = []   # (mid, mlabel, leaderboard_html, content_html, model_sections)
+    machines_data = []
+    machines_html = []
 
     for mid, mlabel, path in machines:
-        md_text = path.read_text(encoding='utf-8')
+        md_text  = path.read_text(encoding='utf-8')
         md_lines = md_text.splitlines()
-        leaderboard_html, cross_charts = build_leaderboard(md_lines)
-        content_html, model_sections = parse_markdown(md_text, cross_charts)
+        leaderboard_html, cross_charts = build_leaderboard(md_lines, mid)
+        content_html, model_sections   = parse_markdown(md_text, cross_charts)
         data = extract_machine_data(md_text)
         machines_data.append((mid, mlabel, data))
         machines_html.append((mid, mlabel, leaderboard_html, content_html, model_sections))
 
-    # Build comparison section
     comparison_html = build_comparison(machines_data) if len(machines_data) > 1 else ''
 
-    # Build tab bar
     machine_ids = [mid for mid, *_ in machines]
+
     if len(machine_ids) > 1:
         btn_html = ''
         for i, (mid, mlabel, *_) in enumerate(machines_html):
@@ -989,16 +1475,17 @@ def main():
     else:
         tab_bar_html = ''
 
-    # Build tab panes
     panes = []
     for i, (mid, mlabel, leaderboard_html, content_html, model_sections) in enumerate(machines_html):
-        active = ' active' if i == 0 else ''
-        expand = (f'<div class="expand-controls">'
-                  f'<button class="expand-ctrl" data-machine="{mid}" data-action="expand">Expand All</button>'
-                  f'<button class="expand-ctrl" data-machine="{mid}" data-action="collapse">Collapse All</button>'
-                  f'</div>')
+        active    = ' active' if i == 0 else ''
+        dom_pills = build_model_domain_pills(mid, model_sections)
+        expand    = (f'<div class="expand-controls">'
+                     f'<button class="expand-ctrl" data-machine="{mid}" data-action="expand">Expand All</button>'
+                     f'<button class="expand-ctrl" data-machine="{mid}" data-action="collapse">Collapse All</button>'
+                     f'</div>')
         pane = (f'<div id="tab-{mid}" class="tab-pane{active}">\n'
                 f'{leaderboard_html}\n'
+                f'{dom_pills}\n'
                 f'{expand}\n'
                 f'{content_html}\n'
                 f'</div>')
@@ -1009,8 +1496,7 @@ def main():
 
     tab_panes_html = '\n'.join(panes)
 
-    # Build nav
-    mws = [(mid, mlabel, ms) for mid, mlabel, _, _, ms in machines_html]
+    mws      = [(mid, mlabel, ms) for mid, mlabel, _, _, ms in machines_html]
     nav_html = build_nav(mws, bool(comparison_html))
 
     html = build_html(tab_bar_html, tab_panes_html, '', nav_html, machine_ids)
